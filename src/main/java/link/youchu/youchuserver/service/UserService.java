@@ -10,11 +10,16 @@ import javax.transaction.Transactional;
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Transactional
     public UserDto getUserData(UserSearchCondition condition){
-        return userRepository.findUsers(condition);
+        return userRepository.getUserData(condition);
     }
 
     @Transactional

@@ -25,14 +25,24 @@ public class ChannelApiController {
 
     @GetMapping("/channel")
     public ResponseEntity<Message> getChannelData(ChannelSearchCondition condition){
-        Message message = new Message();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-        message.setStatus(StatusEnum.OK);
-        message.setMessage("Success");
-        message.setData(channelService.getChannelData(condition));
+       try {
+           Message message = new Message();
+           HttpHeaders headers = new HttpHeaders();
+           headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
+           message.setStatus(StatusEnum.OK);
+           message.setMessage("Success");
+           message.setData(channelService.getChannelData(condition));
 
-        return new ResponseEntity<>(message,headers, HttpStatus.OK);
+           return new ResponseEntity<>(message, headers, HttpStatus.OK);
+       }catch (Exception e){
+           Message message = new Message();
+           HttpHeaders headers = new HttpHeaders();
+           headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+           message.setStatus(StatusEnum.BAD_REQUEST);
+           message.setMessage("잘못된 요청입니다.");
+
+           return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+       }
     }
 
     @GetMapping("/rank")

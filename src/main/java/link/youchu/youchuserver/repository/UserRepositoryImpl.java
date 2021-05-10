@@ -22,7 +22,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     }
 
     @Override
-    public UserDto findUsers(UserSearchCondition condition) {
+    public UserDto getUserData(UserSearchCondition condition) {
         return queryFactory
                 .select(new QUserDto(users.user_id, users.user_email))
                 .from(users)

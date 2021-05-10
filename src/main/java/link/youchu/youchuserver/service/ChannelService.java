@@ -5,6 +5,7 @@ import link.youchu.youchuserver.Dto.ChannelDto;
 import link.youchu.youchuserver.Dto.ChannelSearchCondition;
 import link.youchu.youchuserver.Dto.KeywordSearchCondition;
 import link.youchu.youchuserver.repository.ChannelRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,12 +28,12 @@ public class ChannelService {
     }
 
     @Transactional
-    public List<ChannelDto> getRankingChannelByCategory(CategorySearchCondition condition, Pageable pageable){
+    public Page<ChannelDto> getRankingChannelByCategory(CategorySearchCondition condition, Pageable pageable){
         return channelRepository.getChannelByCategory(condition, pageable);
     }
 
     @Transactional
-    public List<ChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
+    public Page<ChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
         return channelRepository.getChennelByOneKeyword(condition, pageable);
     }
 

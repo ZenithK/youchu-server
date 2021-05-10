@@ -37,10 +37,10 @@ public class KeywordRepositoryImpl implements KeywordRepositoryCustom{
     }
 
     private BooleanExpression channelIdEq(String channel_id){
-        return channel_id == null ? null : channel.channel_id.eq(channel_id);
+        return channel_id == null ? null : channelKeyword.channel.channel_id.eq(channel_id);
     }
 
     private BooleanExpression channelIndexEq(Long channel_index){
-        return channel_index == null ? null : channel.id.eq(channel_index);
+        return channel_index == null ? null : channelKeyword.channel.id.eq(channel_index);
     }
 }

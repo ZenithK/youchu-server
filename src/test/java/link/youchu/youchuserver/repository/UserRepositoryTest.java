@@ -3,6 +3,7 @@ package link.youchu.youchuserver.repository;
 import link.youchu.youchuserver.Dto.UserDto;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
 import link.youchu.youchuserver.domain.Users;
+import link.youchu.youchuserver.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional
 class UserRepositoryTest {
+
+    UserService userService;
+
     @Autowired
     UserRepository userRepository;
 
@@ -26,9 +30,9 @@ class UserRepositoryTest {
     public void basicTest(){
         UserSearchCondition condition = new UserSearchCondition();
         condition.setUser_id(1L);
-        UserDto result = userRepository.findUsers(condition);
 
-        System.out.println(result);
+
+        System.out.println(userService.getUserData(condition));
     }
 
 }
