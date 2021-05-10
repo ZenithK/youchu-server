@@ -32,7 +32,7 @@ class UserRepositoryTest {
         condition.setUser_id(1L);
 
 
-        System.out.println(userService.getUserData(condition));
+        System.out.println(userRepository.getUserData(condition));
     }
 
 }
