@@ -18,14 +18,5 @@ class PrefferedChannelsRepositoryImplTest {
     @Autowired
     private PrefferedChannelsRepository repository;
 
-    @Test
-    public void simple(){
-        PrefferedPostCondition condition = new PrefferedPostCondition();
-        condition.setChannel_index(channel_index);
-        condition.setUser_id(user_id);
-        PrefferedChannels prefferedChannels = new PrefferedChannels(condition.getChannel_index(), condition.getUser_id());
-        prefferedChannels.setId(prefferedChannels.getId());
-        repository.save(prefferedChannels);
 
-    }
 }
