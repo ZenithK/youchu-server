@@ -55,15 +55,6 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
     }
 
     @Override
-    public Long postPreffered(PrefferedPostCondition condition) {
-        em.createQuery("insert into preffered_channels pc values(pc.user.user_id = : user_id,pc.channel.channel_index = :channel_index)")
-                .setParameter("user_id", condition.getUser_id())
-                .setParameter("channel_index", condition.getChannel_index())
-                .executeUpdate();
-        return 1L;
-    }
-
-    @Override
     public Long deletePreffered(PrefferedPostCondition condition) {
         long count = queryFactory.delete(prefferedChannels)
                 .where(userIdEq(condition.getUser_id()),
