@@ -26,10 +26,10 @@ public class Users {
     @Column(name = "refresh_token")
     private String refreshToken;
 
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<PrefferedChannels> prefferedChannels;
 
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "users",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<DislikeChannels> dislikeChannels;
 
     public Users(Long user_id) {

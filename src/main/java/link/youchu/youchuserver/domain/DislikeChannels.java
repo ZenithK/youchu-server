@@ -25,4 +25,16 @@ public class DislikeChannels {
     @JoinColumn(name= "user_id")
     private Users users;
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public DislikeChannels(Long channel_index, Long user_id) {
+        this.channel = new Channel(channel_index);
+        this.users = new Users(user_id);
+    }
 }

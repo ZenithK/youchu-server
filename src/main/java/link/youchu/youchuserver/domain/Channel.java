@@ -66,4 +66,8 @@ public class Channel {
         this.channel_id = channel_id;
         this.title = title;
     }
+
+    public Channel(Long id) {
+        this.id = id;
+    }
 }
