@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface PrefferedChannelsRepositoryCustom {
-    List<ChannelDto> getRecommendChannel(UserSearchCondition condition);
+    List<Long> getRecommendChannel(List<Integer> data);
     Long deletePreffered(PrefferedPostCondition condition);
 
     Long PrefferedCount(UserSearchCondition condition);

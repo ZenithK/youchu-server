@@ -4,15 +4,15 @@ import com.google.gson.Gson;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import link.youchu.youchuserver.Dto.ChannelDto;
-import link.youchu.youchuserver.Dto.PrefferedPostCondition;
-import link.youchu.youchuserver.Dto.QChannelDto;
-import link.youchu.youchuserver.Dto.UserSearchCondition;
+import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.domain.PrefferedChannels;
 import link.youchu.youchuserver.domain.QChannel;
 import link.youchu.youchuserver.domain.QPrefferedChannels;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.RestTemplate;
@@ -36,24 +36,27 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
     }
 
     @Override
-    public List<ChannelDto> getRecommendChannel(UserSearchCondition condition) {
-        Byte[] data = {};
+    public List<Long> getRecommendChannel(List<Integer> data) {
         RestTemplate restTemplate = new RestTemplate();
-        String scoring_url = "http://a379b07d-882c-410e-a70c-4d9cfcaf830b.koreacentral.azurecontainer.io/score";
-        String key = "L8k6h8EfA8yb018poYSK9NfOetwb9Bvh";
+        String scoring_url = "http://f021bb9d-de3a-4342-8633-8192ac642e03.koreacentral.azurecontainer.io/score";
+        String key = "PkEoFWebZeCEefDt4duQcEIOB5EJumrF";
+
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set("Authorization","Bearer " + key);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         Gson gson = new Gson();
-        String requestValue = gson.toJson(data);
-        HttpEntity<String> entity = new HttpEntity<String>(requestValue,headers);
-        String requestUrl = UriComponentsBuilder.fromHttpUrl(scoring_url).queryParam("key",key).encode().toUriString();
+        String json = new Gson().toJson(data);
+        HttpEntity entity = new HttpEntity(json,headers);
+        try {
 
-        String result = restTemplate.postForObject(scoring_url,entity,String.class);
+            System.out.println(restTemplate.postForObject(scoring_url, entity, Long[].class));
+        }catch (Exception e){
+            System.out.println(e);
+        }
 
-        System.out.println(result);
         return null;
     }
+
 
     @Override
     public Long deletePreffered(PrefferedPostCondition condition) {

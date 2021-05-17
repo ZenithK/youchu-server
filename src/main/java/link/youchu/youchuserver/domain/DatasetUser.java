@@ -12,9 +12,14 @@ import javax.persistence.*;
 @Entity
 public class DatasetUser {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "idx")
+    private Long idx;
+
     @Column(name = "id")
     private Long id;
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_index")
+    private Channel channel;
 }

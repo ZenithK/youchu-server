@@ -3,6 +3,7 @@ package link.youchu.youchuserver.service;
 import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.domain.Channel;
 import link.youchu.youchuserver.repository.ChannelRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,14 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ChannelService {
 
 
     private final ChannelRepository channelRepository;
-
-    public ChannelService(ChannelRepository channelRepository) {
-        this.channelRepository = channelRepository;
-    }
 
     @Transactional
     public ChannelDto getChannelData(ChannelSearchCondition channelSearchCondition){

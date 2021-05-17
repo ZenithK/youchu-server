@@ -4,10 +4,20 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import link.youchu.youchuserver.Dto.QUserDto;
 import link.youchu.youchuserver.Dto.UserDto;
+import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
 import link.youchu.youchuserver.domain.QUsers;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static link.youchu.youchuserver.domain.QUsers.*;
@@ -45,9 +55,52 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     }
 
     @Override
-    public Long registerUsers() {
+    public List<String> registerUsers(UserPostCondition condition) {
+        RestTemplate restTemplate = new RestTemplate();
+        List<String> channelIdList = new ArrayList<>();
+        String jwtToken = condition.getUser_token();
+        try {
+            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
+                    .queryParam("aceess_token", jwtToken).encode().toUriString();
 
-        return null;
+            // result
+            String resultJson = restTemplate.getForObject(requestUrl, String.class);
+
+            String youtubeRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/subscriptions")
+                    .queryParam("part", "snippet").queryParam("mine", true).queryParam("maxResults",100)
+                    .queryParam("access_token", jwtToken).encode().toUriString();
+
+            String resultYoutube = restTemplate.getForObject(youtubeRequest, String.class);
+            JSONParser parser = new JSONParser();
+            Object obj = new Object();
+            try {
+                obj = parser.parse(resultYoutube);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            JSONObject user_inform = (JSONObject) parser.parse(resultJson);
+
+            // token expired check
+            String user_email = user_inform.get("email").toString();
+
+            queryFactory.insert(users)
+                    .values(condition.getGoogle_user_id(), user_email, condition.getRefresh_token());
+
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray item = (JSONArray) jsonObject.get("items");
+            for(int i=0; i<item.size(); i++){
+                JSONObject json = (JSONObject) item.get(i);
+                JSONObject snippet = (JSONObject) json.get("snippet");
+                JSONObject resource = (JSONObject) snippet.get("resourceId");
+                channelIdList.add(resource.get("channelId").toString());
+
+            }
+
+        }catch(HttpClientErrorException | ParseException e){
+            // ID Token Invalid
+            return channelIdList;
+        }
+        return channelIdList;
     }
 
     @Override

@@ -27,8 +27,6 @@ public class UserApiController {
 
 
     private final UserService service;
-    private final PrefferedChannelService prefferedChannelService;
-    private final DislikeChannelService dislikeChannelService;
 
     @GetMapping("/user")
     public ResponseEntity<Message> getUserData(UserSearchCondition condition){
@@ -39,9 +37,9 @@ public class UserApiController {
             message.setStatus(StatusEnum.OK);
             message.setMessage("Success");
             UserDto userData = service.getUserData(condition);
-            Long preferred = prefferedChannelService.getCount(condition);
+            Long preferred = service.getPreferCount(condition);
             userData.setPrefer_count(preferred);
-            Long dislike = dislikeChannelService.getCount(condition);
+            Long dislike = service.getDislikeCount(condition);
             userData.setDislike_count(dislike);
 
             message.setData(userData);
@@ -59,11 +57,6 @@ public class UserApiController {
         }
     }
 
-//    @GetMapping("/sync")
-//    public ResponseEntity<Long> synchronizeRecommend(UserSearchCondition condition){
-//
-//    }
-//
     @PostMapping("/register")
     public ResponseEntity<Message> registerUser(UserPostCondition condition){
         try{
@@ -73,7 +66,7 @@ public class UserApiController {
             message.setStatus(StatusEnum.OK);
             message.setMessage("Success");
 
-            message.setData(null);
+            message.setData(service.registerUser(condition));
 
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
@@ -86,14 +79,7 @@ public class UserApiController {
         }
 
     }
-//
-//    @PostMapping("/prefer")
-//    public ResponseEntity<Long>  updatePrefer(){}
-//
-//    @PostMapping("/preffered")
-//    public ResponseEntity<Long>  updateDislike(){}
-//
-//
+
     @DeleteMapping("/exit")
     public ResponseEntity<Message>  exitUser(UserSearchCondition condition){
         try{

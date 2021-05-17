@@ -13,8 +13,4 @@ public class RecommendApiController {
 
     PrefferedChannelsRepository repository;
 
-    @GetMapping("/recommend")
-    public List<ChannelDto> getRecommendChannel(UserSearchCondition condition){
-        return repository.getRecommendChannel(condition);
-    }
 }

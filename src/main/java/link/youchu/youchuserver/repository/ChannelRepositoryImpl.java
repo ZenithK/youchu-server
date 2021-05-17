@@ -110,4 +110,14 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         return list.get(randValue);
 
     }
+
+    @Override
+    public SimpleChannelDto getRecommnedChannel(Long index) {
+        return queryFactory.select(new QSimpleChannelDto(channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+                .from(channel)
+                .where(channelIndexEq(index))
+                .fetchOne();
+
+
+    }
 }

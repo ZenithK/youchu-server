@@ -59,6 +59,9 @@ public class Channel {
     @OneToMany(mappedBy = "channel",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<ChannelTopic> channelTopics;
 
+    @OneToMany(mappedBy = "channel")
+    List<DatasetUser> datasetUsers;
+
     public Channel(String channel_id, String title) {
         this.channel_id = channel_id;
         this.title = title;
