@@ -12,6 +12,7 @@ import link.youchu.youchuserver.service.DislikeChannelService;
 import link.youchu.youchuserver.service.PrefferedChannelService;
 import link.youchu.youchuserver.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -65,9 +66,7 @@ public class UserApiController {
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(StatusEnum.OK);
             message.setMessage("Success");
-
             message.setData(service.registerUser(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             Message message = new Message();

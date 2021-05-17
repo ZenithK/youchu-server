@@ -7,6 +7,7 @@ import link.youchu.youchuserver.Dto.UserDto;
 import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
 import link.youchu.youchuserver.domain.QUsers;
+import link.youchu.youchuserver.domain.Users;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -61,13 +62,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
         String jwtToken = condition.getUser_token();
         try {
             String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
-                    .queryParam("aceess_token", jwtToken).encode().toUriString();
+                    .queryParam("access_token", jwtToken).encode().toUriString();
 
             // result
             String resultJson = restTemplate.getForObject(requestUrl, String.class);
 
             String youtubeRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/subscriptions")
-                    .queryParam("part", "snippet").queryParam("mine", true).queryParam("maxResults",100)
+                    .queryParam("part", "snippet").queryParam("mine", true).queryParam("maxResults",1000)
                     .queryParam("access_token", jwtToken).encode().toUriString();
 
             String resultYoutube = restTemplate.getForObject(youtubeRequest, String.class);
@@ -84,7 +85,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
             String user_email = user_inform.get("email").toString();
 
             queryFactory.insert(users)
-                    .values(condition.getGoogle_user_id(), user_email, condition.getRefresh_token());
+                    .values(condition.getGoogle_user_id(), user_email, condition.getUser_token())
+                    .execute();
 
             JSONObject jsonObject = (JSONObject) obj;
             JSONArray item = (JSONArray) jsonObject.get("items");
@@ -97,6 +99,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
             }
 
         }catch(HttpClientErrorException | ParseException e){
+            System.out.println(e);
             // ID Token Invalid
             return channelIdList;
         }

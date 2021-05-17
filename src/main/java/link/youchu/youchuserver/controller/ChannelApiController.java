@@ -81,9 +81,26 @@ public class ChannelApiController {
         }
     }
 
-    @GetMapping("/verify")
-    public List<Long> verify(){
-        return channelService.getVerfied();
+    @GetMapping("/recommend")
+    public ResponseEntity<Message> getRecommendChannelList(UserSearchCondition condition) {
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.OK);
+            message.setMessage("Success");
+            message.setData(channelService.getRecommendChannel(condition));
+
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+        }catch(Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setMessage("잘못된 요청입니다.");
+
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
     }
 
     @GetMapping("/channelByKeyword")
@@ -108,4 +125,47 @@ public class ChannelApiController {
         }
     }
 
+    @GetMapping("/similiar/topic")
+    public ResponseEntity<Message> getSimilarTopic(UserSearchCondition condition,Pageable pageable) {
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.OK);
+            message.setMessage("Success");
+            message.setData(channelService.getSimilarTopic(condition,pageable));
+
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+        }catch(Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setMessage("잘못된 요청입니다.");
+
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/similar/keyword")
+    public ResponseEntity<Message> getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.OK);
+            message.setMessage("Success");
+            message.setData(channelService.getSimilarTopic(condition,pageable));
+
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+        }catch(Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setMessage("잘못된 요청입니다.");
+
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
 }

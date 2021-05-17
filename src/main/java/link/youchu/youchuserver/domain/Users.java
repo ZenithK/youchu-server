@@ -26,8 +26,8 @@ public class Users {
     @Column(name = "user_email")
     private String user_email;
 
-    @Column(name = "refresh_token")
-    private String refreshToken;
+    @Column(name = "user_token")
+    private String user_token;
 
     @OneToMany(mappedBy = "users",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<PrefferedChannels> prefferedChannels;
@@ -46,6 +46,17 @@ public class Users {
     public Users(Long user_id, String user_email, String refreshToken) {
         this.user_id = user_id;
         this.user_email = user_email;
-        this.refreshToken = refreshToken;
+        this.user_token = refreshToken;
+    }
+
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public Users(Long user_id, String google_user_id, String user_email, String refreshToken) {
+        this.user_id = user_id;
+        this.google_user_id = google_user_id;
+        this.user_email = user_email;
+        this.user_token = refreshToken;
     }
 }

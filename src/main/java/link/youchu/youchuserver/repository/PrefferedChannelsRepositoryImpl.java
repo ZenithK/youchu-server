@@ -20,7 +20,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static link.youchu.youchuserver.domain.QChannel.channel;
 import static link.youchu.youchuserver.domain.QPrefferedChannels.*;
@@ -35,27 +38,6 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
         this.em = em;
     }
 
-    @Override
-    public List<Long> getRecommendChannel(List<Integer> data) {
-        RestTemplate restTemplate = new RestTemplate();
-        String scoring_url = "http://f021bb9d-de3a-4342-8633-8192ac642e03.koreacentral.azurecontainer.io/score";
-        String key = "PkEoFWebZeCEefDt4duQcEIOB5EJumrF";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization","Bearer " + key);
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        Gson gson = new Gson();
-        String json = new Gson().toJson(data);
-        HttpEntity entity = new HttpEntity(json,headers);
-        try {
-
-            System.out.println(restTemplate.postForObject(scoring_url, entity, Long[].class));
-        }catch (Exception e){
-            System.out.println(e);
-        }
-
-        return null;
-    }
 
 
     @Override
@@ -77,7 +59,7 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
 
     @Override
     public List<ChannelDto> getPrefferedList(UserSearchCondition condition) {
-        return queryFactory.select(new QChannelDto(channel.title, channel.description, channel.publishedAt,
+        return queryFactory.select(new QChannelDto(channel.id,channel.title, channel.description, channel.publishedAt,
                 channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
                 channel.video_count, channel.channel_id))
                 .from(prefferedChannels)
@@ -104,5 +86,13 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
 
     private BooleanExpression googleIdEq(String google_id){
         return google_id == null ? null : prefferedChannels.users.google_user_id.eq(google_id);
+    }
+
+    @Override
+    public void postPreffered(PrefferedPostCondition condition) {
+        queryFactory.insert(prefferedChannels)
+                .columns(prefferedChannels.users.user_id, prefferedChannels.channel.id)
+                .values(condition.getUser_id(), condition.getChannel_index())
+                .execute();
     }
 }

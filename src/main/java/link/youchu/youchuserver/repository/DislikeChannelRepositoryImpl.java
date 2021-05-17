@@ -47,7 +47,7 @@ public class DislikeChannelRepositoryImpl implements DislikeChannelRepositoryCus
 
     @Override
     public List<ChannelDto> getDislike(UserSearchCondition condition) {
-        List<ChannelDto> list = queryFactory.select(new QChannelDto(channel.title, channel.description, channel.publishedAt,
+        List<ChannelDto> list = queryFactory.select(new QChannelDto(channel.id,channel.title, channel.description, channel.publishedAt,
                 channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
                 channel.video_count, channel.channel_id))
                 .from(dislikeChannels)

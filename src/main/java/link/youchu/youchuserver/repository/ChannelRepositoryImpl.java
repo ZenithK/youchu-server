@@ -1,24 +1,35 @@
 package link.youchu.youchuserver.repository;
 
+import com.google.gson.Gson;
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.domain.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static link.youchu.youchuserver.domain.QChannel.*;
 import static link.youchu.youchuserver.domain.QChannelKeyword.*;
 import static link.youchu.youchuserver.domain.QChannelTopic.*;
 import static link.youchu.youchuserver.domain.QKeyword.*;
 import static link.youchu.youchuserver.domain.QTopic.*;
+import static link.youchu.youchuserver.domain.QUsers.users;
 
 public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
@@ -31,7 +42,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public ChannelDto getChannelData(ChannelSearchCondition condition) {
         return queryFactory
-                .select(new QChannelDto(channel.title,channel.description,channel.publishedAt,
+                .select(new QChannelDto(channel.id,channel.title,channel.description,channel.publishedAt,
                 channel.thumbnail,channel.viewCount,channel.subScribeCount,channel.bannerImage,
                         channel.video_count,channel.channel_id))
                 .from(channel)
@@ -79,11 +90,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public Page<ChannelDto> getChennelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
-        QueryResults<ChannelDto> results = queryFactory
-                .select(new QChannelDto(channel.title, channel.description, channel.publishedAt,
-                        channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
-                        channel.video_count, channel.channel_id))
+    public Page<SimpleChannelDto> getChennelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
+        QueryResults<SimpleChannelDto> results = queryFactory
+                .select(new QSimpleChannelDto(channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
                 .from(channel)
                 .join(channel.channelKeywords, channelKeyword)
                 .where(keywordIdEq(condition.getKeyword_id()))
@@ -91,7 +100,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .limit(pageable.getPageSize())
                 .fetchResults();
 
-        List<ChannelDto> content = results.getResults();
+        List<SimpleChannelDto> content = results.getResults();
         long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
@@ -100,7 +109,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public ChannelDto getRandomChannel() {
         List<ChannelDto> list = queryFactory
-                .select(new QChannelDto(channel.title, channel.description, channel.publishedAt,
+                .select(new QChannelDto(channel.id,channel.title, channel.description, channel.publishedAt,
                         channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
                         channel.video_count, channel.channel_id))
                 .from(channel)
@@ -111,6 +120,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
     }
 
+
     @Override
     public SimpleChannelDto getRecommnedChannel(Long index) {
         return queryFactory.select(new QSimpleChannelDto(channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
@@ -119,5 +129,31 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .fetchOne();
 
 
+    }
+
+    @Override
+    public List<Long> getSimilarUser(List<Integer> data) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String scoring_url = "http://f021bb9d-de3a-4342-8633-8192ac642e03.koreacentral.azurecontainer.io/score";
+            String key = "PkEoFWebZeCEefDt4duQcEIOB5EJumrF";
+            Map<String,List<Integer>> map = new HashMap<>();
+            map.put("data",data);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization","Bearer " + key);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            Gson gson = new Gson();
+            String json = new Gson().toJson(map);
+            HttpEntity entity = new HttpEntity(json,headers);
+
+            Object[] o = restTemplate.postForObject(scoring_url, entity, Object[].class);
+            System.out.println((List<Long>)o[0]);
+            return (List<Long>) (o[0]);
+        }catch (Exception e){
+            System.out.println(e);
+        }
+
+
+        return null;
     }
 }
