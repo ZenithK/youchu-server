@@ -13,12 +13,15 @@ import java.util.List;
 @Table(name = "topic")
 public class Topic {
     @Id
-    @Column(name = "topic_id")
-    private String id;
+    @Column(name = "topic_index")
+    private Long id;
 
     @Column(name = "topic_name")
     private String topic_name;
 
-    @OneToMany(mappedBy = "topic")
-    List<ChannelTopic> channelTopicList;
+    @Column(name = "topic_id")
+    private String topic_id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Channel channel;
 }

@@ -1,6 +1,7 @@
 package link.youchu.youchuserver.repository;
 
 import com.google.gson.Gson;
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import link.youchu.youchuserver.Dto.ChannelDto;
@@ -80,5 +81,25 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
                 .join(prefferedChannels.channel, channel)
                 .where(userIdEq(condition.getUser_id()))
                 .fetch();
+    }
+
+    @Override
+    public Long PrefferedCount(UserSearchCondition condition) {
+        QueryResults<PrefferedChannels> results = queryFactory.selectFrom(prefferedChannels)
+                .where(userIdEq(condition.getUser_id()),
+                        userEmailEq(condition.getUser_email()),
+                        googleIdEq(condition.getGoogle_user_id()))
+                .fetchResults();
+
+
+        return results.getTotal();
+    }
+
+    private BooleanExpression userEmailEq(String user_email) {
+        return user_email == null ? null : prefferedChannels.users.user_email.eq(user_email);
+    }
+
+    private BooleanExpression googleIdEq(String google_id){
+        return google_id == null ? null : prefferedChannels.users.google_user_id.eq(google_id);
     }
 }

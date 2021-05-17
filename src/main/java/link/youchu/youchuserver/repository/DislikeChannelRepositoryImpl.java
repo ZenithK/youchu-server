@@ -1,5 +1,6 @@
 package link.youchu.youchuserver.repository;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import link.youchu.youchuserver.Dto.ChannelDto;
@@ -7,6 +8,7 @@ import link.youchu.youchuserver.Dto.PrefferedPostCondition;
 import link.youchu.youchuserver.Dto.QChannelDto;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
 import link.youchu.youchuserver.domain.DislikeChannels;
+import link.youchu.youchuserver.domain.PrefferedChannels;
 import link.youchu.youchuserver.domain.QChannel;
 import link.youchu.youchuserver.domain.QDislikeChannels;
 
@@ -55,5 +57,25 @@ public class DislikeChannelRepositoryImpl implements DislikeChannelRepositoryCus
 
         return list;
 
+    }
+
+    @Override
+    public Long dislikeCount(UserSearchCondition condition) {
+        QueryResults<DislikeChannels> results = queryFactory.selectFrom(dislikeChannels)
+                .where(userIdEq(condition.getUser_id()),
+                        userEmailEq(condition.getUser_email()),
+                        googleIdEq(condition.getGoogle_user_id()))
+                .fetchResults();
+
+
+        return results.getTotal();
+    }
+
+    private BooleanExpression userEmailEq(String user_email) {
+        return user_email == null ? null : dislikeChannels.users.user_email.eq(user_email);
+    }
+
+    private BooleanExpression googleIdEq(String google_id){
+        return google_id == null ? null : dislikeChannels.users.google_user_id.eq(google_id);
     }
 }

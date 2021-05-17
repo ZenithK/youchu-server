@@ -27,7 +27,8 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
                 .select(new QUserDto(users.user_id, users.user_email))
                 .from(users)
                 .where(useridEq(condition.getUser_id()),
-                        useremailEq(condition.getUser_email()))
+                        useremailEq(condition.getUser_email()),
+                        googleIdEq(condition.getGoogle_user_id()))
                 .fetchOne();
     }
 
@@ -39,9 +40,13 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
         return email == null ? null : users.user_email.eq(email);
     }
 
+    private BooleanExpression googleIdEq(String googleId){
+        return googleId == null ? null : users.google_user_id.eq(googleId);
+    }
 
     @Override
     public Long registerUsers() {
+
         return null;
     }
 

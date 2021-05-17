@@ -37,4 +37,9 @@ public class PrefferedChannelService {
     public void save(PrefferedChannels prefferedChannels){
         repository.save(prefferedChannels);
     }
+
+    @Transactional
+    public Long getCount(UserSearchCondition condition){
+        return repository.PrefferedCount(condition);
+    }
 }

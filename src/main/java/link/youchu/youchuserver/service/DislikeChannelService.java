@@ -32,4 +32,9 @@ public class DislikeChannelService {
     public List<ChannelDto> getDislikeChannel(UserSearchCondition condition){
         return repository.getDislike(condition);
     }
+
+    @Transactional
+    public Long getCount(UserSearchCondition condition) {
+        return repository.dislikeCount(condition);
+    }
 }

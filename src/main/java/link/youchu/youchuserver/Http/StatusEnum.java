@@ -2,10 +2,10 @@ package link.youchu.youchuserver.Http;
 
 public enum StatusEnum {
 
-    OK(200, "OK"),
-    BAD_REQUEST(400, "BAD_REQUEST"),
-    NOT_FOUND(404, "NOT_FOUND"),
-    INTERNAL_SERER_ERROR(500, "INTERNAL_SERVER_ERROR");
+    OK(200, "200"),
+    BAD_REQUEST(400, "400"),
+    NOT_FOUND(404, "404"),
+    INTERNAL_SERER_ERROR(500, "500");
 
     int statusCode;
     String code;

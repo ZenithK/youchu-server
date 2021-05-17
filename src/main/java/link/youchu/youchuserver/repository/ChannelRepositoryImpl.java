@@ -12,12 +12,13 @@ import org.springframework.data.domain.Pageable;
 import javax.persistence.EntityManager;
 
 import java.util.List;
+import java.util.Random;
 
-import static link.youchu.youchuserver.domain.QCategory.*;
 import static link.youchu.youchuserver.domain.QChannel.*;
-import static link.youchu.youchuserver.domain.QChannelCategory.*;
 import static link.youchu.youchuserver.domain.QChannelKeyword.*;
+import static link.youchu.youchuserver.domain.QChannelTopic.*;
 import static link.youchu.youchuserver.domain.QKeyword.*;
+import static link.youchu.youchuserver.domain.QTopic.*;
 
 public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
@@ -49,33 +50,30 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
 
     @Override
-    public Page<ChannelDto> getChannelByCategory(CategorySearchCondition condition, Pageable pageable) {
-        QueryResults<ChannelDto> results = queryFactory
-                .select(new QChannelDto(channel.title, channel.description, channel.publishedAt,
-                        channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
-                        channel.video_count, channel.channel_id))
-                .from(channel)
-                .join(channel.channelCategories, channelCategory)
-                .where(categoryIdEq(condition.getCategory_id()),
-                        categoryNameEq(condition.getCategory_name()))
+    public Page<SimpleChannelDto> getChannelByTopic(TopicSearchCondition condition, Pageable pageable) {
+        QueryResults<SimpleChannelDto> results = queryFactory
+                .select(new QSimpleChannelDto(channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
+                .from(channelTopic)
+                .join(channelTopic.topic, topic)
+                .where(topicIdEq(condition.getTopic_index()),
+                        topicNameEq(condition.getTopic_name()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
-                .orderBy(channel.subScribeCount.desc())
+                .orderBy(channelTopic.channel.subScribeCount.desc())
                 .fetchResults();
 
-        List<ChannelDto> content = results.getResults();
+        List<SimpleChannelDto> content = results.getResults();
         Long total = results.getTotal();
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression categoryIdEq(Long category_id){
-        return category_id == null ? null : channelCategory.category.category_id.eq(category_id);
+    private BooleanExpression topicIdEq(Long topic_id){
+        return topic_id == null ? null : channelTopic.topic.id.eq(topic_id);
     }
 
-    private BooleanExpression categoryNameEq(String category_name){
-        return category_name == null ? null : channelCategory.category.category_name.eq(category_name);
+    private BooleanExpression topicNameEq(String topic_name) {
+        return topic_name == null ? null : channelTopic.topic.topic_name.eq(topic_name);
     }
-
     private BooleanExpression keywordIdEq(Long keyword_id) {
         return keyword_id == null ? null : channelKeyword.keyword.id.eq(keyword_id);
     }
@@ -97,5 +95,19 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public ChannelDto getRandomChannel() {
+        List<ChannelDto> list = queryFactory
+                .select(new QChannelDto(channel.title, channel.description, channel.publishedAt,
+                        channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
+                        channel.video_count, channel.channel_id))
+                .from(channel)
+                .fetch();
+        Random random = new Random();
+        int randValue = random.nextInt(list.size());
+        return list.get(randValue);
+
     }
 }

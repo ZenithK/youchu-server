@@ -47,19 +47,16 @@ public class Channel {
     @Column(name = "video_count")
     private Long video_count;
 
-    @OneToMany(mappedBy = "channel")
+    @OneToMany(mappedBy = "channel",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<PrefferedChannels> prefferedChannels;
 
-    @OneToMany(mappedBy = "channel")
+    @OneToMany(mappedBy = "channel",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<DislikeChannels> dislikeChannels;
 
-    @OneToMany(mappedBy = "channel")
+    @OneToMany(mappedBy = "channel",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<ChannelKeyword> channelKeywords;
 
-    @OneToMany(mappedBy = "channel")
-    List<ChannelCategory> channelCategories;
-
-    @OneToMany(mappedBy = "channel")
+    @OneToMany(mappedBy = "channel",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<ChannelTopic> channelTopics;
 
     public Channel(String channel_id, String title) {

@@ -12,5 +12,6 @@ public interface PrefferedChannelsRepositoryCustom {
     List<ChannelDto> getRecommendChannel(UserSearchCondition condition);
     Long deletePreffered(PrefferedPostCondition condition);
 
+    Long PrefferedCount(UserSearchCondition condition);
     List<ChannelDto> getPrefferedList(UserSearchCondition condition);
 }

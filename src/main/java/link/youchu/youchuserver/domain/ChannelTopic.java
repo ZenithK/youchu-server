@@ -20,6 +20,6 @@ public class ChannelTopic {
     private Channel channel;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "topic_id")
+    @JoinColumn(name = "topic_index")
     private Topic topic;
 }

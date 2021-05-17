@@ -6,5 +6,5 @@ import lombok.Data;
 public class UserSearchCondition {
     private Long user_id;
     private String user_email;
-
+    private String google_user_id;
 }

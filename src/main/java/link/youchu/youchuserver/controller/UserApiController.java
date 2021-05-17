@@ -1,11 +1,15 @@
 package link.youchu.youchuserver.controller;
 
+import link.youchu.youchuserver.Dto.UserDto;
+import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
 import link.youchu.youchuserver.Http.Message;
 import link.youchu.youchuserver.Http.StatusEnum;
 import link.youchu.youchuserver.repository.DislikeChannelRepository;
 import link.youchu.youchuserver.repository.PrefferedChannelsRepository;
 import link.youchu.youchuserver.repository.UserRepository;
+import link.youchu.youchuserver.service.DislikeChannelService;
+import link.youchu.youchuserver.service.PrefferedChannelService;
 import link.youchu.youchuserver.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.nio.charset.Charset;
 
 @RestController
@@ -21,9 +26,9 @@ import java.nio.charset.Charset;
 public class UserApiController {
 
 
-    private final UserRepository userRepository;
-    private final UserService userService;
-
+    private final UserService service;
+    private final PrefferedChannelService prefferedChannelService;
+    private final DislikeChannelService dislikeChannelService;
 
     @GetMapping("/user")
     public ResponseEntity<Message> getUserData(UserSearchCondition condition){
@@ -33,8 +38,13 @@ public class UserApiController {
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(StatusEnum.OK);
             message.setMessage("Success");
-            message.setData(userRepository.getUserData(condition));
+            UserDto userData = service.getUserData(condition);
+            Long preferred = prefferedChannelService.getCount(condition);
+            userData.setPrefer_count(preferred);
+            Long dislike = dislikeChannelService.getCount(condition);
+            userData.setDislike_count(dislike);
 
+            message.setData(userData);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
         }catch (Exception e){
@@ -54,10 +64,28 @@ public class UserApiController {
 //
 //    }
 //
-//    @PostMapping("/register")
-//    public ResponseEntity<Long> registerUser(){
-//
-//    }
+    @PostMapping("/register")
+    public ResponseEntity<Message> registerUser(UserPostCondition condition){
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.OK);
+            message.setMessage("Success");
+
+            message.setData(null);
+
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+        }catch (Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setMessage("잘못된 요청입니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+
+    }
 //
 //    @PostMapping("/prefer")
 //    public ResponseEntity<Long>  updatePrefer(){}
@@ -74,8 +102,7 @@ public class UserApiController {
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(StatusEnum.OK);
             message.setMessage("Success");
-            userRepository.deleteById(condition.getUser_id());
-            message.setData(condition.getUser_id());
+            message.setData(service.exitUser(condition));
 
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){

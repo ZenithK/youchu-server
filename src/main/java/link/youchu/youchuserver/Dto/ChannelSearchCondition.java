@@ -5,5 +5,6 @@ import lombok.Data;
 @Data
 public class ChannelSearchCondition {
     private String channel_id;
+    private Long user_id;
     private Long channel_index;
 }

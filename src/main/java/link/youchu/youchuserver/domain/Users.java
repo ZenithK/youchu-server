@@ -20,6 +20,9 @@ public class Users {
     @Column(name = "user_id")
     private Long user_id;
 
+    @Column(name = "google_user_id")
+    private String google_user_id;
+
     @Column(name = "user_email")
     private String user_email;
 
