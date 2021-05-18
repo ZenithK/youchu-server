@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.naming.AuthenticationException;
 import javax.transaction.Transactional;
 import java.nio.charset.Charset;
 
@@ -35,14 +36,13 @@ public class UserApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             UserDto userData = service.getUserData(condition);
             Long preferred = service.getPreferCount(condition);
             userData.setPrefer_count(preferred);
             Long dislike = service.getDislikeCount(condition);
             userData.setDislike_count(dislike);
-
             message.setData(userData);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
@@ -51,9 +51,8 @@ public class UserApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
-
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }
     }
@@ -64,15 +63,26 @@ public class UserApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(service.registerUser(condition));
+            Long aLong = service.registerUser(condition);
+            if(aLong == null){
+                throw new AuthenticationException();
+            }
+            message.setData(aLong);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
+        }catch(AuthenticationException e) {
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(401L);
+            message.setMessage("로그인 실패!");
+            return new ResponseEntity<>(message,headers, HttpStatus.UNAUTHORIZED);
         }catch (Exception e){
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }
@@ -85,16 +95,15 @@ public class UserApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             message.setData(service.exitUser(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }

@@ -13,6 +13,7 @@ import link.youchu.youchuserver.domain.QChannel;
 import link.youchu.youchuserver.domain.QDislikeChannels;
 
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
 
 import java.util.List;
 
@@ -23,17 +24,26 @@ import static link.youchu.youchuserver.domain.QPrefferedChannels.prefferedChanne
 public class DislikeChannelRepositoryImpl implements DislikeChannelRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
+    private final EntityManager em;
 
     public DislikeChannelRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
+        this.em = em;
     }
 
     @Override
+    public void postDislike(PrefferedPostCondition condition) {
+        DislikeChannels dislikeChannels = new DislikeChannels(condition.getChannel_index(), condition.getUser_id());
+        em.persist(dislikeChannels);
+    }
+
+    @Transactional
+    @Override
     public Long deleteDislike(PrefferedPostCondition condition) {
         queryFactory.delete(dislikeChannels)
-                    .where(userIdEq(condition.getUser_id()),
-                            channelIndexEq(condition.getChannel_index()))
-                    .execute();
+                .where(userIdEq(condition.getUser_id()),
+                        channelIndexEq(condition.getChannel_index()))
+                .execute();
         return condition.getUser_id();
     }
 

@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,20 +34,21 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
+
     public PrefferedChannelsRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
         this.em = em;
     }
 
 
-
+    @Transactional
     @Override
     public Long deletePreffered(PrefferedPostCondition condition) {
-        long count = queryFactory.delete(prefferedChannels)
+        queryFactory.delete(prefferedChannels)
                 .where(userIdEq(condition.getUser_id()),
                         channelIndexEq(condition.getChannel_index()))
                 .execute();
-        return count;
+        return condition.getUser_id();
     }
 
     private BooleanExpression userIdEq(Long user_id){
@@ -88,11 +90,10 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
         return google_id == null ? null : prefferedChannels.users.google_user_id.eq(google_id);
     }
 
+    @Transactional
     @Override
     public void postPreffered(PrefferedPostCondition condition) {
-        queryFactory.insert(prefferedChannels)
-                .columns(prefferedChannels.users.user_id, prefferedChannels.channel.id)
-                .values(condition.getUser_id(), condition.getChannel_index())
-                .execute();
+        PrefferedChannels prefferedChannels = new PrefferedChannels(condition.getChannel_index(), condition.getUser_id());
+        em.persist(prefferedChannels);
     }
 }

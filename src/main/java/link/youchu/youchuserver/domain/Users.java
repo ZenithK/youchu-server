@@ -53,10 +53,9 @@ public class Users {
         return user_id;
     }
 
-    public Users(Long user_id, String google_user_id, String user_email, String refreshToken) {
-        this.user_id = user_id;
+    public Users(String google_user_id, String user_email, String user_token) {
         this.google_user_id = google_user_id;
         this.user_email = user_email;
-        this.user_token = refreshToken;
+        this.user_token = user_token;
     }
 }

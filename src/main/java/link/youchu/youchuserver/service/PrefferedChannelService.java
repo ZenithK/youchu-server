@@ -18,7 +18,6 @@ public class PrefferedChannelService {
     private final PrefferedChannelsRepository repository;
 
     @Transactional
-
     public Long deletePreffered(PrefferedPostCondition condition){
         return repository.deletePreffered(condition);
     }

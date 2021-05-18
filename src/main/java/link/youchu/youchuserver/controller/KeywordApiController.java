@@ -29,17 +29,16 @@ public class KeywordApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             message.setData(keywordRepository.getKeywordList(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             System.out.println(e.getMessage());
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }

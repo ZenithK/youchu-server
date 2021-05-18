@@ -32,16 +32,15 @@ public class PrefferedChannelApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             message.setData(service.getPrefferedList(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }
@@ -55,12 +54,9 @@ public class PrefferedChannelApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
-            PrefferedChannels prefferedChannels = new PrefferedChannels(condition.getChannel_index(), condition.getUser_id());
-            prefferedChannels.setId(prefferedChannels.getId());
-            service.save(prefferedChannels);
-            repository.flush();
+            repository.postPreffered(condition);
             message.setData(1);
 
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
@@ -69,7 +65,7 @@ public class PrefferedChannelApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }
@@ -81,17 +77,16 @@ public class PrefferedChannelApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             message.setData(service.deletePreffered(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             System.out.println(e);
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }

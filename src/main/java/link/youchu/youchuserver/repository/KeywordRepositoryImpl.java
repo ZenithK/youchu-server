@@ -29,6 +29,7 @@ public class KeywordRepositoryImpl implements KeywordRepositoryCustom{
     public List<KeywordDto> getKeywordList(ChannelSearchCondition condition) {
         return queryFactory
                 .select(new QKeywordDto(keyword.keyword_name))
+                .distinct()
                 .from(keyword)
                 .join(keyword.channelKeywords, channelKeyword)
                 .where(channelIdEq(condition.getChannel_id()),

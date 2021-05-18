@@ -95,7 +95,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .select(new QSimpleChannelDto(channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
                 .from(channel)
                 .join(channel.channelKeywords, channelKeyword)
-                .where(keywordIdEq(condition.getKeyword_id()))
+                .where(keywordIdEq(condition.getKeyword_id()),
+                        keywordNameEq(condition.getKeyword_name()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
@@ -104,6 +105,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
+    }
+
+    private BooleanExpression keywordNameEq(String keyword_name) {
+        return keyword_name == null ? null : channelKeyword.keyword.keyword_name.eq(keyword_name);
     }
 
     @Override
@@ -129,6 +134,39 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .fetchOne();
 
 
+    }
+
+    @Override
+    public Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable) {
+        QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+                .from(channel)
+                .where(channelIndicesEq(channel_indices))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
+
+        List<SimpleChannelDto> content = results.getResults();
+        long total = results.getTotal();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    private BooleanExpression channelIndicesEq(List<Long> channel_indices){
+        if(channel_indices == null){
+            return null;
+        }
+        else{
+            return channel.id.in(channel_indices);
+        }
+    }
+
+    @Override
+    public Long getChannelIndex(ChannelSearchCondition condition) {
+        return queryFactory.select(channel.id)
+                .from(channel)
+                .where(channelIndexEq(condition.getChannel_index()),
+                        channelIdEq(condition.getChannel_id()))
+                .fetchOne();
     }
 
     @Override

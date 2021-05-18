@@ -9,7 +9,6 @@ public class SimpleChannelDto {
     private String thumbnail;
     private Long subscriber_count;
     private String channel_id;
-    private Boolean isPrefered;
 
     @QueryProjection
     public SimpleChannelDto(String title, String thumbnail, Long subscriber_count, String channel_id) {
@@ -17,6 +16,5 @@ public class SimpleChannelDto {
         this.thumbnail = thumbnail;
         this.subscriber_count = subscriber_count;
         this.channel_id = channel_id;
-        this.isPrefered = false;
     }
 }

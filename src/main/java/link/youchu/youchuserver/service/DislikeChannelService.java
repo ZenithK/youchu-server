@@ -19,8 +19,8 @@ public class DislikeChannelService {
     private final DislikeChannelRepository repository;
 
     @Transactional
-    public void save(DislikeChannels dislikeChannels){
-        repository.saveAndFlush(dislikeChannels);
+    public void save(PrefferedPostCondition condition){
+        repository.postDislike(condition);
     }
 
     @Transactional

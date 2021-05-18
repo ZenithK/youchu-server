@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
+import javax.persistence.FlushModeType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,20 +28,26 @@ import static org.springframework.util.ObjectUtils.isEmpty;
 public class UserRepositoryImpl implements UserRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
-
+    private final EntityManager em;
     public UserRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
+        this.em = em;
     }
 
     @Override
     public UserDto getUserData(UserSearchCondition condition) {
-        return queryFactory
+        UserDto userDto = queryFactory
                 .select(new QUserDto(users.user_id, users.user_email))
                 .from(users)
                 .where(useridEq(condition.getUser_id()),
                         useremailEq(condition.getUser_email()),
                         googleIdEq(condition.getGoogle_user_id()))
                 .fetchOne();
+        if (userDto == null) {
+            System.out.println("null");
+        }
+        System.out.println(userDto);
+        return userDto;
     }
 
     private BooleanExpression useridEq(Long id){
@@ -58,7 +65,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     @Override
     public List<String> registerUsers(UserPostCondition condition) {
         RestTemplate restTemplate = new RestTemplate();
-        List<String> channelIdList = new ArrayList<>();
+        List<String> channelIdList = null;
         String jwtToken = condition.getUser_token();
         try {
             String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
@@ -84,10 +91,9 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
             // token expired check
             String user_email = user_inform.get("email").toString();
 
-            queryFactory.insert(users)
-                    .values(condition.getGoogle_user_id(), user_email, condition.getUser_token())
-                    .execute();
-
+            Users user = new Users(condition.getGoogle_user_id(), user_email, condition.getUser_token());
+            em.persist(user);
+            channelIdList = new ArrayList<>();
             JSONObject jsonObject = (JSONObject) obj;
             JSONArray item = (JSONArray) jsonObject.get("items");
             for(int i=0; i<item.size(); i++){

@@ -11,7 +11,8 @@ public interface ChannelRepositoryCustom {
     Page<SimpleChannelDto> getChannelByTopic(TopicSearchCondition condition, Pageable pageable);
     ChannelDto getRandomChannel();
     Page<SimpleChannelDto> getChennelByOneKeyword(KeywordSearchCondition condition, Pageable pageable);
-
+    Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable);
+    Long getChannelIndex(ChannelSearchCondition condition);
     List<Long> getSimilarUser(List<Integer> data);
     SimpleChannelDto getRecommnedChannel(Long index);
 }

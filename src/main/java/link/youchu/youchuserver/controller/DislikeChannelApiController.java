@@ -34,41 +34,36 @@ public class DislikeChannelApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             message.setData(service.getDislikeChannel(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }
     }
 
     @PostMapping("/dislike")
-    public ResponseEntity<Message> postDislieke(PrefferedPostCondition condition){
+    public ResponseEntity<Message> postDislike(PrefferedPostCondition condition){
         try{
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
-            DislikeChannels dislikeChannels = new DislikeChannels(condition.getChannel_index(),condition.getUser_id());
-            dislikeChannels.setId(dislikeChannels.getId());
-            service.save(dislikeChannels);
-            message.setData(1);
-
+            service.save(condition);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             System.out.println(e.getMessage());
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }
@@ -80,17 +75,16 @@ public class DislikeChannelApiController {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.OK);
+            message.setStatus(200L);
             message.setMessage("Success");
             message.setData(service.deleteDislike(condition));
-
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             System.out.println(e);
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
-            message.setStatus(StatusEnum.BAD_REQUEST);
+            message.setStatus(400L);
             message.setMessage("잘못된 요청입니다.");
             return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }

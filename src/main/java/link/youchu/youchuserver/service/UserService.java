@@ -35,24 +35,31 @@ public class UserService {
     }
 
     @Transactional
-    public int registerUser(UserPostCondition condition) {
+    public Long registerUser(UserPostCondition condition) {
         List<String> channelIds = userRepository.registerUsers(condition);
+        if(channelIds == null){
+            return null;
+        }
         UserSearchCondition userSearchCondition = new UserSearchCondition();
         userSearchCondition.setGoogle_user_id(condition.getGoogle_user_id());
         Long user_id = userRepository.getUserData(userSearchCondition).getUser_id();
+        System.out.println(user_id);
         for (String c : channelIds) {
             PrefferedPostCondition prefferedPostCondition = new PrefferedPostCondition();
             prefferedPostCondition.setUser_id(user_id);
             ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
             channelSearchCondition.setChannel_id(c);
-            if(channelRepository.getChannelData(channelSearchCondition) == null){
-                continue;
+            try{
+                prefferedPostCondition.setChannel_index(channelRepository.getChannelIndex(channelSearchCondition));
+                if (prefferedPostCondition.getChannel_index() != null) {
+                    prefferedChannelsRepository.postPreffered(prefferedPostCondition);
+                }
+            }catch (Exception e){
+                System.out.println(e);
             }
-            prefferedPostCondition.setChannel_index(channelRepository.getChannelData(channelSearchCondition).getChannel_index());
-            prefferedChannelsRepository.postPreffered(prefferedPostCondition);
         }
 
-        return channelIds.size();
+        return user_id;
     }
 
     @Transactional

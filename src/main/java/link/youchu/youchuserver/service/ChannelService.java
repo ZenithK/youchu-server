@@ -53,6 +53,11 @@ public class ChannelService {
     }
 
     @Transactional
+    public ChannelDto getRandomChannel() {
+        return channelRepository.getRandomChannel();
+    }
+
+    @Transactional
     public Page<SimpleChannelDto> getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
         List<ChannelDto> list = prefferedChannelsRepository.getPrefferedList(condition);
         Random random = new Random();
@@ -74,7 +79,7 @@ public class ChannelService {
     }
 
     @Transactional
-    public List<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition){
+    public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
         List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(condition);
         List<Channel> channels = channelRepository.findAll();
         List<Integer> data = new ArrayList<>();
@@ -104,11 +109,7 @@ public class ChannelService {
             }
         }
         channelIndexs = channelIndexs.stream().distinct().collect(Collectors.toList());
-        List<SimpleChannelDto> recommendChannel = new ArrayList<>();
-        for(Long index : channelIndexs){
-            recommendChannel.add(channelRepository.getRecommnedChannel(index));
-        }
-        return recommendChannel;
+        return channelRepository.getRecommendChannelList(channelIndexs,pageable);
     }
 
 }
