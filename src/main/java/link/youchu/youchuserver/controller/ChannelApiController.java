@@ -1,6 +1,7 @@
 package link.youchu.youchuserver.controller;
 
 import link.youchu.youchuserver.Dto.*;
+import link.youchu.youchuserver.Http.ComplexMessage;
 import link.youchu.youchuserver.Http.Message;
 import link.youchu.youchuserver.Http.StatusEnum;
 import link.youchu.youchuserver.domain.Channel;
@@ -119,14 +120,14 @@ public class ChannelApiController {
     }
 
     @GetMapping("/random")
-    public ResponseEntity<Message> getRandomChannel() {
+    public ResponseEntity<Message> getRandomChannel(UserSearchCondition condition) {
         try{
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(channelService.getRandomChannel());
+            message.setData(channelService.getRandomChannel(condition));
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(Exception e){
             Message message = new Message();
@@ -139,17 +140,17 @@ public class ChannelApiController {
     }
 
     @GetMapping("/similar/topic")
-    public ResponseEntity<Message> getSimilarTopic(UserSearchCondition condition,Pageable pageable) {
+    public ResponseEntity<ComplexMessage> getSimilarTopic(UserSearchCondition condition,Pageable pageable) {
         try{
-            Message message = new Message();
+            ComplexMessage message = channelService.getSimilarTopic(condition,pageable);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(channelService.getSimilarTopic(condition,pageable));
+
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(Exception e){
-            Message message = new Message();
+            ComplexMessage message = new ComplexMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(400L);
@@ -159,18 +160,17 @@ public class ChannelApiController {
     }
 
     @GetMapping("/similar/keyword")
-    public ResponseEntity<Message> getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
+    public ResponseEntity<ComplexMessage> getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
         try{
-            Message message = new Message();
+            ComplexMessage message = channelService.getSimilarKeyword(condition,pageable);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(channelService.getSimilarTopic(condition,pageable));
 
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(Exception e){
-            Message message = new Message();
+            ComplexMessage message = new ComplexMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(400L);

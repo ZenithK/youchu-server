@@ -29,9 +29,19 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
 
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
+
     public UserRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
         this.em = em;
+    }
+
+    @Override
+    public Long getUserIndex(UserSearchCondition condition) {
+        Long index = queryFactory.select(users.user_id)
+                .from(users)
+                .where(googleIdEq(condition.getGoogle_user_id()))
+                .fetchOne();
+        return index;
     }
 
     @Override
@@ -93,6 +103,65 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
 
             Users user = new Users(condition.getGoogle_user_id(), user_email, condition.getUser_token());
             em.persist(user);
+            channelIdList = new ArrayList<>();
+            JSONObject jsonObject = (JSONObject) obj;
+            JSONArray item = (JSONArray) jsonObject.get("items");
+            for(int i=0; i<item.size(); i++){
+                JSONObject json = (JSONObject) item.get(i);
+                JSONObject snippet = (JSONObject) json.get("snippet");
+                JSONObject resource = (JSONObject) snippet.get("resourceId");
+                channelIdList.add(resource.get("channelId").toString());
+
+            }
+
+        }catch(HttpClientErrorException | ParseException e){
+            System.out.println(e);
+            // ID Token Invalid
+            return channelIdList;
+        }
+        return channelIdList;
+    }
+
+    @Override
+    public List<String> updateUsers(UserPostCondition condition) {
+        RestTemplate restTemplate = new RestTemplate();
+        List<String> channelIdList = null;
+        String jwtToken = condition.getUser_token();
+        try {
+            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
+                    .queryParam("access_token", jwtToken).encode().toUriString();
+
+            // result
+            String resultJson = restTemplate.getForObject(requestUrl, String.class);
+
+            String youtubeRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/subscriptions")
+                    .queryParam("part", "snippet").queryParam("mine", true).queryParam("maxResults",1000)
+                    .queryParam("access_token", jwtToken).encode().toUriString();
+
+            String resultYoutube = restTemplate.getForObject(youtubeRequest, String.class);
+            JSONParser parser = new JSONParser();
+            Object obj = new Object();
+            try {
+                obj = parser.parse(resultYoutube);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            JSONObject user_inform = (JSONObject) parser.parse(resultJson);
+
+            // token expired check
+            String user_email = user_inform.get("email").toString();
+
+//            Users user = new Users(condition.getGoogle_user_id(), user_email, condition.getUser_token());
+//            em.persist(user);
+
+
+            queryFactory.update(users).where(useridEq(condition.getUser_id()))
+                    .set(users.user_email, user_email)
+                    .set(users.google_user_id, condition.getGoogle_user_id())
+                    .set(users.user_token, condition.getUser_token())
+                    .execute();
+
+
             channelIdList = new ArrayList<>();
             JSONObject jsonObject = (JSONObject) obj;
             JSONArray item = (JSONArray) jsonObject.get("items");

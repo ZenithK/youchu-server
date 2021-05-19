@@ -10,4 +10,7 @@ import java.util.List;
 public interface DatasetUserRepository extends JpaRepository<DatasetUser, Long>,DatasetUserRepositoryCustom {
     @Query("select d.channel.id from DatasetUser d where d.id=:id")
     List<Long> getChannelIndexById(@Param("id") Long id);
+
+    @Query("select d.channel.id from DatasetUser d where d.id in :indices")
+    List<Long> getChannelIndexByIndices(@Param("indices") List<Long> indices);
 }

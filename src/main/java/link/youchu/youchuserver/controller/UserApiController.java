@@ -3,8 +3,11 @@ package link.youchu.youchuserver.controller;
 import link.youchu.youchuserver.Dto.UserDto;
 import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
+import link.youchu.youchuserver.Http.ComplexMessage;
 import link.youchu.youchuserver.Http.Message;
+import link.youchu.youchuserver.Http.ParameterMessage;
 import link.youchu.youchuserver.Http.StatusEnum;
+import link.youchu.youchuserver.domain.Users;
 import link.youchu.youchuserver.repository.DislikeChannelRepository;
 import link.youchu.youchuserver.repository.PrefferedChannelsRepository;
 import link.youchu.youchuserver.repository.UserRepository;
@@ -29,6 +32,28 @@ public class UserApiController {
 
 
     private final UserService service;
+
+    @GetMapping("/userIndex")
+    public ResponseEntity<Message> getUserIndex(UserSearchCondition condition) {
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(200L);
+            message.setMessage("Success");
+            message.setData(service.getUserIndex(condition));
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+
+        }catch (Exception e){
+            System.out.println(e.getMessage());
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(400L);
+            message.setMessage("잘못된 요청입니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @GetMapping("/user")
     public ResponseEntity<Message> getUserData(UserSearchCondition condition){
@@ -58,28 +83,38 @@ public class UserApiController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Message> registerUser(UserPostCondition condition){
+    public ResponseEntity<ParameterMessage> registerUser(@RequestBody final UserPostCondition condition){
         try{
-            Message message = new Message();
+            ParameterMessage message = new ParameterMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            Long aLong = service.registerUser(condition);
+            Long aLong = null;
+            Long user_id = null;
+            UserSearchCondition userSearchCondition = new UserSearchCondition();
+            userSearchCondition.setGoogle_user_id(condition.getGoogle_user_id());
+            if( (user_id = service.getUserData(userSearchCondition).getUser_id()) != null){
+                message.setExist(true);
+                condition.setUser_id(user_id);
+                aLong = service.UpdateUser(condition);
+            }else{
+                aLong = service.registerUser(condition);
+            }
             if(aLong == null){
                 throw new AuthenticationException();
             }
             message.setData(aLong);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(AuthenticationException e) {
-            Message message = new Message();
+            ParameterMessage message = new ParameterMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(401L);
             message.setMessage("로그인 실패!");
             return new ResponseEntity<>(message,headers, HttpStatus.UNAUTHORIZED);
         }catch (Exception e){
-            Message message = new Message();
+            ParameterMessage message = new ParameterMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(400L);

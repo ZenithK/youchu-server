@@ -1,9 +1,15 @@
 package link.youchu.youchuserver.repository;
 
+import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import link.youchu.youchuserver.Dto.QSimpleChannelDto;
+import link.youchu.youchuserver.Dto.SimpleChannelDto;
 import link.youchu.youchuserver.domain.QChannel;
 import link.youchu.youchuserver.domain.QDatasetUser;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityManager;
 import java.util.ArrayList;
@@ -20,19 +26,15 @@ public class DatasetuserRepositoryImpl implements DatasetUserRepositoryCustom{
     }
 
 //    @Override
-//    public List<Long> getChannelIndexById(Long id) {
-//        List<Long> list = jpaQueryFactory.select(channel.id)
+//    public List<Long> getChannel(List<Long> ids) {
+//        return jpaQueryFactory.select(datasetUser.channel.id)
 //                .from(datasetUser)
-//                .where(IdEq(id))
+//                .where(userIndicesEq(ids))
 //                .fetch();
-//        if (list == null) {
-//            System.out.println("Error");
 //
-//        }
-//        return list;
 //    }
 
-    private BooleanExpression IdEq(Long user_id){
-        return user_id == null ? null : datasetUser.id.eq(user_id);
+    private BooleanExpression userIndicesEq(List<Long> userIndices){
+        return userIndices == null ? null : datasetUser.id.in(userIndices);
     }
 }

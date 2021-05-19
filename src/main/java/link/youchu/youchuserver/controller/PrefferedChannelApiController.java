@@ -48,8 +48,8 @@ public class PrefferedChannelApiController {
 
 
 
-    @RequestMapping(value = "/prefer",method = {RequestMethod.POST})
-    public ResponseEntity<Message> postPrefferedChannel(PrefferedPostCondition condition){
+    @PostMapping(value = "/prefer")
+    public ResponseEntity<Message> postPrefferedChannel(@RequestBody final PrefferedPostCondition condition){
         try{
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();

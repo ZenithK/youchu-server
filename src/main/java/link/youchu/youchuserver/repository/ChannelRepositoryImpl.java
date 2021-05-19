@@ -27,7 +27,9 @@ import java.util.*;
 import static link.youchu.youchuserver.domain.QChannel.*;
 import static link.youchu.youchuserver.domain.QChannelKeyword.*;
 import static link.youchu.youchuserver.domain.QChannelTopic.*;
+import static link.youchu.youchuserver.domain.QDislikeChannels.*;
 import static link.youchu.youchuserver.domain.QKeyword.*;
+import static link.youchu.youchuserver.domain.QPrefferedChannels.*;
 import static link.youchu.youchuserver.domain.QTopic.*;
 import static link.youchu.youchuserver.domain.QUsers.users;
 
@@ -90,15 +92,36 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public Page<SimpleChannelDto> getChennelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
+    public Page<SimpleChannelDto> getChannelByKeyword(KeywordSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
-                .from(channel)
-                .join(channel.channelKeywords, channelKeyword)
+                .select(new QSimpleChannelDto(channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
+                .from(channelKeyword)
+                .join(channelKeyword.channel, channel)
                 .where(keywordIdEq(condition.getKeyword_id()),
                         keywordNameEq(condition.getKeyword_name()))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .orderBy(channel.subScribeCount.desc())
+                .fetchResults();
+
+        List<SimpleChannelDto> content = results.getResults();
+        long total = results.getTotal();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
+        QueryResults<SimpleChannelDto> results = queryFactory
+                .select(new QSimpleChannelDto(channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
+                .distinct()
+                .from(channelKeyword)
+                .join(channelKeyword.channel, channel)
+                .where(keywordIdEq(condition.getKeyword_id()),
+                        keywordNameEq(condition.getKeyword_name()))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(channel.subScribeCount.desc())
                 .fetchResults();
 
         List<SimpleChannelDto> content = results.getResults();
@@ -112,12 +135,26 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public ChannelDto getRandomChannel() {
+    public ChannelDto getRandomChannel(UserSearchCondition condition) {
+        List<Long> result = queryFactory.select(dislikeChannels.channel.id)
+                .from(dislikeChannels)
+                .where(dislikeUserIdEq(condition.getUser_id()),
+                        dislikeGoogleIdEq(condition.getGoogle_user_id()))
+                .fetch();
+
+        List<Long> resultPrefer = queryFactory.select(prefferedChannels.channel.id)
+                .from(prefferedChannels)
+                .where(preferUserIdEq(condition.getUser_id()),
+                        preferGoogleIdEq(condition.getGoogle_user_id()))
+                .fetch();
+        result.addAll(resultPrefer);
+
         List<ChannelDto> list = queryFactory
                 .select(new QChannelDto(channel.id,channel.title, channel.description, channel.publishedAt,
                         channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
                         channel.video_count, channel.channel_id))
                 .from(channel)
+                .where(channelIndexNEq(result))
                 .fetch();
         Random random = new Random();
         int randValue = random.nextInt(list.size());
@@ -125,6 +162,25 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
     }
 
+    private BooleanExpression preferUserIdEq(Long user_id){
+        return user_id == null ? null : prefferedChannels.users.user_id.eq(user_id);
+    }
+
+    private BooleanExpression preferGoogleIdEq(String google_user_id) {
+        return google_user_id == null ? null : prefferedChannels.users.google_user_id.eq(google_user_id);
+    }
+
+    private BooleanExpression dislikeUserIdEq(Long user_id){
+        return user_id == null ? null : dislikeChannels.users.user_id.eq(user_id);
+    }
+
+    private BooleanExpression dislikeGoogleIdEq(String google_user_id){
+        return google_user_id == null ? null : dislikeChannels.users.google_user_id.eq(google_user_id);
+    }
+
+    private BooleanExpression channelIndexNEq(List<Long> channelIndices){
+        return channelIndices == null ? null : channel.id.notIn(channelIndices);
+    }
 
     @Override
     public SimpleChannelDto getRecommnedChannel(Long index) {
@@ -132,8 +188,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .from(channel)
                 .where(channelIndexEq(index))
                 .fetchOne();
-
-
     }
 
     @Override
@@ -185,7 +239,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
             HttpEntity entity = new HttpEntity(json,headers);
 
             Object[] o = restTemplate.postForObject(scoring_url, entity, Object[].class);
-            System.out.println((List<Long>)o[0]);
             return (List<Long>) (o[0]);
         }catch (Exception e){
             System.out.println(e);

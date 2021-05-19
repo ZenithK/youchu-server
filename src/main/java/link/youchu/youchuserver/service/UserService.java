@@ -35,6 +35,11 @@ public class UserService {
     }
 
     @Transactional
+    public Long getUserIndex(UserSearchCondition condition) {
+        return userRepository.getUserIndex(condition);
+    }
+
+    @Transactional
     public Long registerUser(UserPostCondition condition) {
         List<String> channelIds = userRepository.registerUsers(condition);
         if(channelIds == null){
@@ -59,6 +64,32 @@ public class UserService {
             }
         }
 
+        return user_id;
+    }
+
+    @Transactional
+    public Long UpdateUser(UserPostCondition condition) {
+        List<String> channelIds = userRepository.updateUsers(condition);
+        if(channelIds == null){
+            return null;
+        }
+        Long user_id = condition.getUser_id();
+        for (String c : channelIds) {
+            PrefferedPostCondition prefferedPostCondition = new PrefferedPostCondition();
+            prefferedPostCondition.setUser_id(user_id);
+            ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
+            channelSearchCondition.setChannel_id(c);
+            try{
+                prefferedPostCondition.setChannel_index(channelRepository.getChannelIndex(channelSearchCondition));
+                if (prefferedPostCondition.getChannel_index() != null) {
+                    if(prefferedChannelsRepository.getPrefferedChannel(prefferedPostCondition) == null){
+                        prefferedChannelsRepository.postPreffered(prefferedPostCondition);
+                    }
+                }
+            }catch (Exception e){
+                System.out.println(e);
+            }
+        }
         return user_id;
     }
 

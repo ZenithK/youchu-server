@@ -5,9 +5,7 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import link.youchu.youchuserver.Dto.*;
-import link.youchu.youchuserver.domain.PrefferedChannels;
-import link.youchu.youchuserver.domain.QChannel;
-import link.youchu.youchuserver.domain.QPrefferedChannels;
+import link.youchu.youchuserver.domain.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.http.HttpEntity;
@@ -27,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static link.youchu.youchuserver.domain.QChannel.channel;
+import static link.youchu.youchuserver.domain.QChannelKeyword.*;
 import static link.youchu.youchuserver.domain.QPrefferedChannels.*;
 
 @Repository
@@ -39,7 +38,6 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
         this.queryFactory = new JPAQueryFactory(em);
         this.em = em;
     }
-
 
     @Transactional
     @Override
@@ -58,6 +56,7 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
     private BooleanExpression channelIndexEq(Long channel_index){
         return channel_index == null ? null : prefferedChannels.channel.id.eq(channel_index);
     }
+
 
     @Override
     public List<ChannelDto> getPrefferedList(UserSearchCondition condition) {
@@ -82,6 +81,21 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
         return results.getTotal();
     }
 
+    @Override
+    public List<Long> getPrefferedChannelIndex(UserSearchCondition condition) {
+        List<Long> result = queryFactory.select(prefferedChannels.channel.id)
+                .from(prefferedChannels)
+                .join(prefferedChannels.channel, channel)
+                .where(userIdEq(condition.getUser_id()),
+                        userGoogleEq(condition.getGoogle_user_id()))
+                .fetch();
+        return result;
+    }
+
+    private BooleanExpression userGoogleEq(String google_user_id){
+        return google_user_id == null ? null : prefferedChannels.users.google_user_id.eq(google_user_id);
+    }
+
     private BooleanExpression userEmailEq(String user_email) {
         return user_email == null ? null : prefferedChannels.users.user_email.eq(user_email);
     }
@@ -95,5 +109,21 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
     public void postPreffered(PrefferedPostCondition condition) {
         PrefferedChannels prefferedChannels = new PrefferedChannels(condition.getChannel_index(), condition.getUser_id());
         em.persist(prefferedChannels);
+    }
+
+    @Override
+    public PrefferedChannels getPrefferedChannel(PrefferedPostCondition condition) {
+        return queryFactory.selectFrom(prefferedChannels)
+                .where(userIdEq(condition.getUser_id()),
+                        channelIndexEq(condition.getChannel_index()))
+                .fetchOne();
+    }
+
+
+
+    @Override
+    public List<ChannelDto> getPreferredProcess(List<ChannelDto> channelDtos) {
+
+        return null;
     }
 }

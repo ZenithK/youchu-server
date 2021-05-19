@@ -1,7 +1,7 @@
 package link.youchu.youchuserver.service;
 
 import link.youchu.youchuserver.Dto.*;
-import link.youchu.youchuserver.domain.Channel;
+import link.youchu.youchuserver.Http.ComplexMessage;
 import link.youchu.youchuserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +35,7 @@ public class ChannelService {
     }
 
     @Transactional
-    public Page<SimpleChannelDto> getSimilarTopic(UserSearchCondition condition,Pageable pageable) {
+    public ComplexMessage getSimilarTopic(UserSearchCondition condition,Pageable pageable) {
         List<ChannelDto> list = prefferedChannelsRepository.getPrefferedList(condition);
         Random random = new Random();
         int randValue = random.nextInt(list.size());
@@ -48,17 +48,19 @@ public class ChannelService {
         TopicSearchCondition topicSearchCondition = new TopicSearchCondition();
         topicSearchCondition.setTopic_name(topicDto.getTopic_name());
         Page<SimpleChannelDto> channelByTopic = channelRepository.getChannelByTopic(topicSearchCondition, pageable);
-
-        return channelByTopic;
+        ComplexMessage message = new ComplexMessage();
+        message.setStandardValue(randomChannel.getTitle());
+        message.setData(channelByTopic);
+        return message;
     }
 
     @Transactional
-    public ChannelDto getRandomChannel() {
-        return channelRepository.getRandomChannel();
+    public ChannelDto getRandomChannel(UserSearchCondition condition) {
+        return channelRepository.getRandomChannel(condition);
     }
 
     @Transactional
-    public Page<SimpleChannelDto> getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
+    public ComplexMessage getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
         List<ChannelDto> list = prefferedChannelsRepository.getPrefferedList(condition);
         Random random = new Random();
         int randValue = random.nextInt(list.size());
@@ -70,46 +72,30 @@ public class ChannelService {
         KeywordDto keywordDto = keywordList.get(randValue);
         KeywordSearchCondition keywordSearchCondition = new KeywordSearchCondition();
         keywordSearchCondition.setKeyword_name(keywordDto.getKeyword_name());
-        return channelRepository.getChennelByOneKeyword(keywordSearchCondition,pageable);
+        Page<SimpleChannelDto> keyword = channelRepository.getChannelByKeyword(keywordSearchCondition, pageable);
+
+        ComplexMessage message = new ComplexMessage();
+        message.setStandardValue(randomChannel.getTitle());
+        message.setData(keyword);
+        return message;
     }
 
     @Transactional
     public Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
-        return channelRepository.getChennelByOneKeyword(condition, pageable);
+        return channelRepository.getChannelByOneKeyword(condition, pageable);
     }
 
     @Transactional
     public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
-        List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(condition);
-        List<Channel> channels = channelRepository.findAll();
-        List<Integer> data = new ArrayList<>();
-        for(Channel c : channels){
-            boolean flag = false;
-            for(ChannelDto cd : prefferedList){
-                if(c.getChannel_id().equals(cd.getChannel_id())){
-                    flag= true;
-                    break;
-                }
-            }
-            if(flag){
-                data.add(1);
-            }else{
-                data.add(0);
-            }
-        }
-        for(int i=0; i<46;i++){
-            data.add(0);
+        List<Long> preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21974,0));
+        for(Long index : preferIndex){
+            data.set((int) (index - 1), 1);
         }
         List<Long> similarUsers = channelRepository.getSimilarUser(data);
-        List<Long> channelIndexs = new ArrayList<>();
-        for(Long index : similarUsers){
-            List<Long> channelIndexById = datasetUserRepository.getChannelIndexById(index + 1);
-            for(Long channel_index : channelIndexById){
-                channelIndexs.add(channel_index);
-            }
-        }
-        channelIndexs = channelIndexs.stream().distinct().collect(Collectors.toList());
-        return channelRepository.getRecommendChannelList(channelIndexs,pageable);
+        similarUsers.forEach(s->s=s+1);
+        List<Long> index = datasetUserRepository.getChannelIndexByIndices(similarUsers);
+        return channelRepository.getRecommendChannelList(index, pageable);
     }
 
 }
