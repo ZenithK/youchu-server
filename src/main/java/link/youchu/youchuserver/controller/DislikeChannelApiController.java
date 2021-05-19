@@ -54,6 +54,7 @@ public class DislikeChannelApiController {
             message.setStatus(200L);
             message.setMessage("Success");
             service.save(condition);
+            message.setData(1L);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch (Exception e){
             System.out.println(e.getMessage());
