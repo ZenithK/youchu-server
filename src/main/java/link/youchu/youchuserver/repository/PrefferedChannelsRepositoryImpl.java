@@ -70,6 +70,27 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
     }
 
     @Override
+    public List<ChannelDto> getPreffered(UserSearchCondition condition) {
+        List<Long> list = queryFactory.select(channelKeyword.channel.id)
+                .from(channelKeyword)
+                .join(channelKeyword.channel, channel)
+                .where(channelKeyword.keyword.isNull())
+                .fetch();
+        return queryFactory.select(new QChannelDto(channel.id,channel.title, channel.description, channel.publishedAt,
+                channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
+                channel.video_count, channel.channel_id))
+                .from(prefferedChannels)
+                .join(prefferedChannels.channel, channel)
+                .where(userIdEq(condition.getUser_id()),
+                        channelIndexNotIn(list))
+                .fetch();
+    }
+
+    private BooleanExpression channelIndexNotIn(List<Long> list){
+        return list == null ? null : prefferedChannels.channel.id.notIn(list);
+    }
+
+    @Override
     public Long PrefferedCount(UserSearchCondition condition) {
         QueryResults<PrefferedChannels> results = queryFactory.selectFrom(prefferedChannels)
                 .where(userIdEq(condition.getUser_id()),

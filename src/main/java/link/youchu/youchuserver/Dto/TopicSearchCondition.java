@@ -6,4 +6,5 @@ import lombok.Data;
 public class TopicSearchCondition {
     private Long topic_index;
     private String topic_name;
+    private Long user_id;
 }

@@ -31,12 +31,23 @@ public class ChannelService {
 
     @Transactional
     public Page<SimpleChannelDto> getRankingChannelByTopic(TopicSearchCondition condition, Pageable pageable){
-        return channelRepository.getChannelByTopic(condition, pageable);
+        Page<SimpleChannelDto> channelByTopic = channelRepository.getChannelByTopic(condition, pageable);
+        UserSearchCondition userSearchCondition = new UserSearchCondition();
+        userSearchCondition.setUser_id(condition.getUser_id());
+        List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(userSearchCondition);
+        for (ChannelDto c : prefferedList) {
+            for (SimpleChannelDto s : channelByTopic) {
+                if(s.getChannel_id().equals(c.getChannel_id())){
+                    s.setIsPreferred(true);
+                }
+            }
+        }
+        return channelByTopic;
     }
 
     @Transactional
     public ComplexMessage getSimilarTopic(UserSearchCondition condition,Pageable pageable) {
-        List<ChannelDto> list = prefferedChannelsRepository.getPrefferedList(condition);
+        List<ChannelDto> list = prefferedChannelsRepository.getPreffered(condition);
         Random random = new Random();
         int randValue = random.nextInt(list.size());
         ChannelDto randomChannel = list.get(randValue);
@@ -48,6 +59,16 @@ public class ChannelService {
         TopicSearchCondition topicSearchCondition = new TopicSearchCondition();
         topicSearchCondition.setTopic_name(topicDto.getTopic_name());
         Page<SimpleChannelDto> channelByTopic = channelRepository.getChannelByTopic(topicSearchCondition, pageable);
+        UserSearchCondition userSearchCondition = new UserSearchCondition();
+        userSearchCondition.setUser_id(condition.getUser_id());
+        List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(userSearchCondition);
+        for (ChannelDto c : prefferedList) {
+            for (SimpleChannelDto s : channelByTopic) {
+                if(s.getChannel_id().equals(c.getChannel_id())){
+                    s.setIsPreferred(true);
+                }
+            }
+        }
         ComplexMessage message = new ComplexMessage();
         message.setStandardValue(randomChannel.getTitle());
         message.setData(channelByTopic);
@@ -61,7 +82,7 @@ public class ChannelService {
 
     @Transactional
     public ComplexMessage getSimilarKeyword(UserSearchCondition condition, Pageable pageable) {
-        List<ChannelDto> list = prefferedChannelsRepository.getPrefferedList(condition);
+        List<ChannelDto> list = prefferedChannelsRepository.getPreffered(condition);
         Random random = new Random();
         int randValue = random.nextInt(list.size());
         ChannelDto randomChannel = list.get(randValue);
@@ -73,7 +94,16 @@ public class ChannelService {
         KeywordSearchCondition keywordSearchCondition = new KeywordSearchCondition();
         keywordSearchCondition.setKeyword_name(keywordDto.getKeyword_name());
         Page<SimpleChannelDto> keyword = channelRepository.getChannelByKeyword(keywordSearchCondition, pageable);
-
+        UserSearchCondition userSearchCondition = new UserSearchCondition();
+        userSearchCondition.setUser_id(condition.getUser_id());
+        List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(userSearchCondition);
+        for (ChannelDto c : prefferedList) {
+            for (SimpleChannelDto s : keyword) {
+                if(s.getChannel_id().equals(c.getChannel_id())){
+                    s.setIsPreferred(true);
+                }
+            }
+        }
         ComplexMessage message = new ComplexMessage();
         message.setStandardValue(randomChannel.getTitle());
         message.setData(keyword);
@@ -82,7 +112,18 @@ public class ChannelService {
 
     @Transactional
     public Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
-        return channelRepository.getChannelByOneKeyword(condition, pageable);
+        Page<SimpleChannelDto> keyword = channelRepository.getChannelByOneKeyword(condition, pageable);
+        UserSearchCondition userSearchCondition = new UserSearchCondition();
+        userSearchCondition.setUser_id(condition.getUser_id());
+        List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(userSearchCondition);
+        for (ChannelDto c : prefferedList) {
+            for (SimpleChannelDto s : keyword) {
+                if(s.getChannel_id().equals(c.getChannel_id())){
+                    s.setIsPreferred(true);
+                }
+            }
+        }
+        return keyword;
     }
 
     @Transactional

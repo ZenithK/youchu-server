@@ -66,6 +66,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     public Page<SimpleChannelDto> getChannelByTopic(TopicSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleChannelDto> results = queryFactory
                 .select(new QSimpleChannelDto(channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
+                .distinct()
                 .from(channelTopic)
                 .join(channelTopic.topic, topic)
                 .where(topicIdEq(condition.getTopic_index()),

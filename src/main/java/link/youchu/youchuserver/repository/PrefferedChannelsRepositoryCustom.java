@@ -15,6 +15,7 @@ public interface PrefferedChannelsRepositoryCustom {
     Long PrefferedCount(UserSearchCondition condition);
     List<ChannelDto> getPrefferedList(UserSearchCondition condition);
 
+    List<ChannelDto> getPreffered(UserSearchCondition condition);
     PrefferedChannels getPrefferedChannel(PrefferedPostCondition condition);
     List<Long> getPrefferedChannelIndex(UserSearchCondition condition);
     List<ChannelDto> getPreferredProcess(List<ChannelDto> channelDtos);
