@@ -63,9 +63,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
 
     @Override
-    public Page<SimpleChannelDto> getChannelByTopic(TopicSearchCondition condition, Pageable pageable) {
-        QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelTopic.channel.id,channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
+    public Page<SimpleDtoPlusBanner> getChannelByTopic(TopicSearchCondition condition, Pageable pageable) {
+        QueryResults<SimpleDtoPlusBanner> results = queryFactory
+                .select(new QSimpleDtoPlusBanner(channelTopic.channel.id,channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.bannerImage,channelTopic.channel.channel_id))
                 .distinct()
                 .from(channelTopic)
                 .join(channelTopic.topic, topic)
@@ -76,7 +76,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .orderBy(channelTopic.channel.subScribeCount.desc())
                 .fetchResults();
 
-        List<SimpleChannelDto> content = results.getResults();
+        List<SimpleDtoPlusBanner> content = results.getResults();
         Long total = results.getTotal();
         return new PageImpl<>(content, pageable, total);
     }
@@ -93,9 +93,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public Page<SimpleChannelDto> getChannelByKeyword(KeywordSearchCondition condition, Pageable pageable) {
-        QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelKeyword.channel.id,channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
+    public Page<SimpleDtoPlusBanner> getChannelByKeyword(KeywordSearchCondition condition, Pageable pageable) {
+        QueryResults<SimpleDtoPlusBanner> results = queryFactory
+                .select(new QSimpleDtoPlusBanner(channelKeyword.channel.id,channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.bannerImage,channelKeyword.channel.channel_id))
                 .from(channelKeyword)
                 .join(channelKeyword.channel, channel)
                 .where(keywordIdEq(condition.getKeyword_id()),
@@ -105,7 +105,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .orderBy(channel.subScribeCount.desc())
                 .fetchResults();
 
-        List<SimpleChannelDto> content = results.getResults();
+        List<SimpleDtoPlusBanner> content = results.getResults();
         long total = results.getTotal();
 
         return new PageImpl<>(content, pageable, total);
@@ -192,10 +192,24 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable) {
+    public Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable,UserSearchCondition condition) {
+        List<Long> result = queryFactory.select(dislikeChannels.channel.id)
+                .from(dislikeChannels)
+                .where(dislikeUserIdEq(condition.getUser_id()),
+                        dislikeGoogleIdEq(condition.getGoogle_user_id()))
+                .fetch();
+
+        List<Long> resultPrefer = queryFactory.select(prefferedChannels.channel.id)
+                .from(prefferedChannels)
+                .where(preferUserIdEq(condition.getUser_id()),
+                        preferGoogleIdEq(condition.getGoogle_user_id()))
+                .fetch();
+        result.addAll(resultPrefer);
+
         QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.id,channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
                 .from(channel)
-                .where(channelIndicesEq(channel_indices))
+                .where(channelIndicesEq(channel_indices),
+                        channelIndexNEq(result))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();

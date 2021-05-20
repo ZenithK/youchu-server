@@ -65,6 +65,9 @@ public class ChannelApiController {
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
+            if(condition.getTopic_name().equals("전체")){
+                condition.setTopic_name(null);
+            }
             message.setData(channelService.getRankingChannelByTopic(condition,pageable));
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
