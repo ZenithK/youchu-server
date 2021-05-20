@@ -65,7 +65,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public Page<SimpleChannelDto> getChannelByTopic(TopicSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
+                .select(new QSimpleChannelDto(channelTopic.channel.id,channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.channel_id))
                 .distinct()
                 .from(channelTopic)
                 .join(channelTopic.topic, topic)
@@ -95,7 +95,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public Page<SimpleChannelDto> getChannelByKeyword(KeywordSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
+                .select(new QSimpleChannelDto(channelKeyword.channel.id,channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
                 .from(channelKeyword)
                 .join(channelKeyword.channel, channel)
                 .where(keywordIdEq(condition.getKeyword_id()),
@@ -114,7 +114,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
+                .select(new QSimpleChannelDto(channelKeyword.channel.id,channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
                 .distinct()
                 .from(channelKeyword)
                 .join(channelKeyword.channel, channel)
@@ -185,7 +185,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
     @Override
     public SimpleChannelDto getRecommnedChannel(Long index) {
-        return queryFactory.select(new QSimpleChannelDto(channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+        return queryFactory.select(new QSimpleChannelDto(channel.id,channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
                 .from(channel)
                 .where(channelIndexEq(index))
                 .fetchOne();
@@ -193,7 +193,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
     @Override
     public Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable) {
-        QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+        QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.id,channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
                 .from(channel)
                 .where(channelIndicesEq(channel_indices))
                 .offset(pageable.getOffset())

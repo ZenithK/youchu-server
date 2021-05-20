@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class SimpleChannelDto {
+    private Long channel_index;
     private String title;
     private String thumbnail;
     private Long subscriber_count;
@@ -12,7 +13,8 @@ public class SimpleChannelDto {
     private Boolean isPreferred;
 
     @QueryProjection
-    public SimpleChannelDto(String title, String thumbnail, Long subscriber_count, String channel_id) {
+    public SimpleChannelDto(Long channel_index,String title, String thumbnail, Long subscriber_count, String channel_id) {
+        this.channel_index = channel_index;
         this.title = title;
         this.thumbnail = thumbnail;
         this.subscriber_count = subscriber_count;
@@ -21,7 +23,8 @@ public class SimpleChannelDto {
     }
 
     @QueryProjection
-    public SimpleChannelDto(String title, String thumbnail, Long subscriber_count, String channel_id, Boolean isPreferred) {
+    public SimpleChannelDto(Long channel_index,String title, String thumbnail, Long subscriber_count, String channel_id, Boolean isPreferred) {
+        this.channel_index = channel_index;
         this.title = title;
         this.thumbnail = thumbnail;
         this.subscriber_count = subscriber_count;
