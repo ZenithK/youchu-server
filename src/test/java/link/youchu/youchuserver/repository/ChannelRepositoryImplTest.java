@@ -14,15 +14,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class ChannelRepositoryImplTest {
 
-    @Autowired
-    ChannelRepository channelRepository;
-
-    @Test
-    public void testSimple(){
-        ChannelSearchCondition condition = new ChannelSearchCondition();
-        condition.setChannel_index(1L);
-        ChannelDto data = channelRepository.getChannelData(condition);
-        System.out.println(data);
-    }
+//    @Autowired
+//    ChannelRepository channelRepository;
+//
+//    @Test
+//    public void testSimple(){
+//        ChannelSearchCondition condition = new ChannelSearchCondition();
+//        condition.setChannel_index(1L);
+//        ChannelDto data = channelRepository.getChannelData(condition);
+//        System.out.println(data);
+//    }
 
 }
