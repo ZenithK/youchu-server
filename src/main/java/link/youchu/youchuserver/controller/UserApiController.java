@@ -94,7 +94,9 @@ public class UserApiController {
             Long user_id = null;
             UserSearchCondition userSearchCondition = new UserSearchCondition();
             userSearchCondition.setGoogle_user_id(condition.getGoogle_user_id());
-            if( (user_id = service.getUserData(userSearchCondition).getUser_id()) != null){
+            UserDto userData = service.getUserData(userSearchCondition);
+            if( userData != null){
+                user_id = userData.getUser_id();
                 message.setExist(true);
                 condition.setUser_id(user_id);
                 aLong = service.UpdateUser(condition);

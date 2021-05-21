@@ -2,8 +2,10 @@ package link.youchu.youchuserver.service;
 
 import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.Http.ComplexMessage;
+import link.youchu.youchuserver.domain.VideoDto;
 import link.youchu.youchuserver.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -111,6 +113,26 @@ public class ChannelService {
     }
 
     @Transactional
+    public Page<SimpleChannelDto> getRelatedChannel(UserSearchCondition condition, Pageable pageable){
+        Page<SimpleChannelDto> recommendChannel = getRecommendChannel(condition, pageable);
+        Random random = new Random();
+        List<SimpleChannelDto> content = recommendChannel.getContent();
+        int randValue = random.nextInt(content.size());
+        SimpleChannelDto simpleChannelDto = content.get(randValue);
+        List<Long> channels = channelRepository.getRelatedChannel(simpleChannelDto.getChannel_index());
+        channels.forEach(s->s=s+1);
+        UserSearchCondition userSearchCondition = new UserSearchCondition();
+        userSearchCondition.setUser_id(condition.getUser_id());
+        return channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
+
+    }
+
+    @Transactional
+    public List<VideoDto> getLatestChannel(ChannelSearchCondition condition) throws ParseException {
+        return channelRepository.getChannelVideo(condition.getChannel_id());
+    }
+
+    @Transactional
     public Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
         Page<SimpleChannelDto> keyword = channelRepository.getChannelByOneKeyword(condition, pageable);
         UserSearchCondition userSearchCondition = new UserSearchCondition();
@@ -129,14 +151,14 @@ public class ChannelService {
     @Transactional
     public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
         List<Long> preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
-        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21974,0));
+        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
         for(Long index : preferIndex){
             data.set((int) (index - 1), 1);
         }
-        List<Long> similarUsers = channelRepository.getSimilarUser(data);
-        similarUsers.forEach(s->s=s+1);
-        List<Long> index = datasetUserRepository.getChannelIndexByIndices(similarUsers);
-        return channelRepository.getRecommendChannelList(index, pageable,condition);
+        List<Long> recommendIndex = channelRepository.getSimilarChannel(data);
+////        similarUsers.forEach(s->s=s+1);
+//        List<Long> index = datasetUserRepository.getChannelIndexByIndices(recommnedIndex);
+        return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
     }
 
 }

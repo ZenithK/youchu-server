@@ -10,6 +10,8 @@ import link.youchu.youchuserver.repository.PrefferedChannelsRepository;
 import link.youchu.youchuserver.service.ChannelService;
 import link.youchu.youchuserver.service.PrefferedChannelService;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
+import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -42,7 +44,7 @@ public class ChannelApiController {
            List<ChannelDto> preferredDtos = prefferedChannelService.getPrefferedList(searchCondition);
            for(ChannelDto c : preferredDtos){
                if(c.getChannel_id().equals(channelDtos.getChannel_id())){
-                   channelDtos.setIsPrefered(true);
+                   channelDtos.setIsPreferred(true);
                }
            }
            message.setData(channelDtos);
@@ -72,6 +74,35 @@ public class ChannelApiController {
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
         }catch (Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(400L);
+            message.setMessage("잘못된 요청입니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/latest")
+    public ResponseEntity<Message> getLastestChannelList(ChannelSearchCondition condition){
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(200L);
+            message.setMessage("Success");
+
+            message.setData(channelService.getLatestChannel(condition));
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+
+        }catch(ParseException e) {
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(204L);
+            message.setMessage("채널에 비디오가 없습니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }catch(Exception e){
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));

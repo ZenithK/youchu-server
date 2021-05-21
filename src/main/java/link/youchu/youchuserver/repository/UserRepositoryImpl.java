@@ -103,6 +103,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
 
             Users user = new Users(condition.getGoogle_user_id(), user_email, condition.getUser_token());
             em.persist(user);
+
             channelIdList = new ArrayList<>();
             JSONObject jsonObject = (JSONObject) obj;
             JSONArray item = (JSONArray) jsonObject.get("items");
@@ -127,13 +128,25 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
         RestTemplate restTemplate = new RestTemplate();
         List<String> channelIdList = null;
         String jwtToken = condition.getUser_token();
+        String resultJson;
         try {
             String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
                     .queryParam("access_token", jwtToken).encode().toUriString();
 
             // result
-            String resultJson = restTemplate.getForObject(requestUrl, String.class);
+            resultJson = restTemplate.getForObject(requestUrl, String.class);
+            System.out.println(resultJson);
 
+
+
+        }catch(HttpClientErrorException e){
+            System.out.println("Error!");
+            System.out.println(e);
+            // ID Token Invalid
+            return channelIdList;
+        }
+
+        try{
             String youtubeRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/subscriptions")
                     .queryParam("part", "snippet").queryParam("mine", true).queryParam("maxResults",1000)
                     .queryParam("access_token", jwtToken).encode().toUriString();
@@ -150,10 +163,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
 
             // token expired check
             String user_email = user_inform.get("email").toString();
-
-//            Users user = new Users(condition.getGoogle_user_id(), user_email, condition.getUser_token());
-//            em.persist(user);
-
 
             queryFactory.update(users).where(useridEq(condition.getUser_id()))
                     .set(users.user_email, user_email)
@@ -172,11 +181,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
                 channelIdList.add(resource.get("channelId").toString());
 
             }
-
-        }catch(HttpClientErrorException | ParseException e){
-            System.out.println(e);
-            // ID Token Invalid
-            return channelIdList;
+        }catch (HttpClientErrorException e){
+            channelIdList.add("insufficient");
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
         return channelIdList;
     }

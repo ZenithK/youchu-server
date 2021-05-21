@@ -47,6 +47,9 @@ public class Channel {
     @Column(name = "video_count")
     private Long video_count;
 
+    @Column(name = "country")
+    private String country;
+
     @OneToMany(mappedBy = "channel",cascade = CascadeType.REMOVE,orphanRemoval = true)
     List<PrefferedChannels> prefferedChannels;
 

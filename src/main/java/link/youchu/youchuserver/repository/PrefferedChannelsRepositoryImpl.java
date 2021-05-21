@@ -141,10 +141,4 @@ public class PrefferedChannelsRepositoryImpl implements PrefferedChannelsReposit
     }
 
 
-
-    @Override
-    public List<ChannelDto> getPreferredProcess(List<ChannelDto> channelDtos) {
-
-        return null;
-    }
 }

@@ -10,6 +10,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -28,12 +29,15 @@ import static link.youchu.youchuserver.domain.QChannel.*;
 import static link.youchu.youchuserver.domain.QChannelKeyword.*;
 import static link.youchu.youchuserver.domain.QChannelTopic.*;
 import static link.youchu.youchuserver.domain.QDislikeChannels.*;
-import static link.youchu.youchuserver.domain.QKeyword.*;
 import static link.youchu.youchuserver.domain.QPrefferedChannels.*;
 import static link.youchu.youchuserver.domain.QTopic.*;
-import static link.youchu.youchuserver.domain.QUsers.users;
 
 public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
+
+    @Value("${api.address}")
+    private String scoring_url;
+    @Value("${api.key}")
+    private String api_key;
 
     private final JPAQueryFactory queryFactory;
 
@@ -53,6 +57,71 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .fetchOne();
     }
 
+    @Override
+    public List<VideoDto> getChannelVideo(String channel_id) throws ParseException {
+        RestTemplate restTemplate = new RestTemplate();
+        List<VideoDto> channelVideo = new ArrayList<>();
+        try {
+            int count = 0;
+            // Channel playlist
+            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlists")
+                    .queryParam("part","contentDetails")
+                    .queryParam("channelId", channel_id)
+                    .queryParam("key", api_key).encode().toUriString();
+
+            JSONParser parser = new JSONParser();
+
+            // playlist result
+            String resultJson = restTemplate.getForObject(requestUrl, String.class);
+
+            List<String> playlist = new ArrayList<>();
+
+            Object parse = parser.parse(resultJson);
+            JSONObject jsonObject = (JSONObject) parse;
+            JSONArray items = (JSONArray) jsonObject.get("items");
+
+            for (int i = 0; i < items.size(); i++) {
+                JSONObject json = (JSONObject) items.get(i);
+                playlist.add(json.get("id").toString());
+                JSONObject object = (JSONObject) json.get("contentDetails");
+                int itemCount = Integer.parseInt(object.get("itemCount").toString());
+                count += itemCount;
+                if (count >= 10) {
+                    break;
+                }
+            }
+
+            for (String playlistId : playlist) {
+                String itemRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlistItems")
+                        .queryParam("part","snippet")
+                        .queryParam("playlistId", playlistId)
+                        .queryParam("key", api_key).encode().toUriString();
+
+                String resultVideo = restTemplate.getForObject(itemRequest, String.class);
+
+                JSONObject json = (JSONObject) parser.parse(resultVideo);
+                JSONArray videoItems = (JSONArray) json.get("items");
+
+                for(int i=0; i<videoItems.size();i++){
+                    JSONObject jsonObject1 = (JSONObject) videoItems.get(i);
+                    JSONObject snippet = (JSONObject) jsonObject1.get("snippet");
+                    String title = snippet.get("title").toString();
+                    String publishedAt = snippet.get("publishedAt").toString().substring(0, 10);
+                    JSONObject thumbnails = (JSONObject) snippet.get("thumbnails");
+                    JSONObject medium = (JSONObject) thumbnails.get("medium");
+                    String url = medium.get("url").toString();
+                    VideoDto videoDto = new VideoDto(url, title, publishedAt);
+                    channelVideo.add(videoDto);
+                }
+
+            }
+
+        } catch (ParseException e) {
+            throw new ParseException(0,"채널에 업로드된 영상이 없습니다.");
+        }
+        return channelVideo;
+    }
+
     private BooleanExpression channelIdEq(String channel_id){
         return channel_id == null ? null : channel.channel_id.eq(channel_id);
     }
@@ -70,7 +139,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .from(channelTopic)
                 .join(channelTopic.topic, topic)
                 .where(topicIdEq(condition.getTopic_index()),
-                        topicNameEq(condition.getTopic_name()))
+                        topicNameEq(condition.getTopic_name()),
+                        country())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .orderBy(channelTopic.channel.subScribeCount.desc())
@@ -79,6 +149,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         List<SimpleDtoPlusBanner> content = results.getResults();
         Long total = results.getTotal();
         return new PageImpl<>(content, pageable, total);
+    }
+
+    private BooleanExpression country(){
+        return channelTopic.channel.country.eq("KR");
     }
 
     private BooleanExpression topicIdEq(Long topic_id){
@@ -239,27 +313,44 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public List<Long> getSimilarUser(List<Integer> data) {
+    public List<Long> getSimilarChannel(List<Integer> data) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            String scoring_url = "http://f021bb9d-de3a-4342-8633-8192ac642e03.koreacentral.azurecontainer.io/score";
-            String key = "PkEoFWebZeCEefDt4duQcEIOB5EJumrF";
             Map<String,List<Integer>> map = new HashMap<>();
             map.put("data",data);
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization","Bearer " + key);
             headers.setContentType(MediaType.APPLICATION_JSON);
             Gson gson = new Gson();
             String json = new Gson().toJson(map);
             HttpEntity entity = new HttpEntity(json,headers);
 
-            Object[] o = restTemplate.postForObject(scoring_url, entity, Object[].class);
+            Object[] o = restTemplate.postForObject(scoring_url+"/recommand", entity, Object[].class);
             return (List<Long>) (o[0]);
         }catch (Exception e){
             System.out.println(e);
         }
 
 
+        return null;
+    }
+
+    @Override
+    public List<Long> getRelatedChannel(Long channel_index) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            Map<String, Long> map = new HashMap<>();
+            map.put("data",channel_index);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            Gson gson = new Gson();
+            String json = new Gson().toJson(map);
+            HttpEntity entity = new HttpEntity(json,headers);
+
+            Object[] o = restTemplate.postForObject(scoring_url+"/channel", entity, Object[].class);
+            return (List<Long>) (o[0]);
+        }catch (Exception e){
+            System.out.println(e);
+        }
         return null;
     }
 }
