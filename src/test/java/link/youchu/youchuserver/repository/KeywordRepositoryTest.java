@@ -14,13 +14,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class KeywordRepositoryTest {
 
-    private KeywordService keywordService;
-
-    @Autowired
-    private KeywordRepository keywordRepository;
-
-    @Test
-    public void simpleTest(){
-
-    }
+//    private KeywordService keywordService;
+//
+//    @Autowired
+//    private KeywordRepository keywordRepository;
+//
+//    @Test
+//    public void simpleTest(){
+//        System.out.println();
+//    }
 }

@@ -105,6 +105,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 for(int i=0; i<videoItems.size();i++){
                     JSONObject jsonObject1 = (JSONObject) videoItems.get(i);
                     JSONObject snippet = (JSONObject) jsonObject1.get("snippet");
+                    JSONObject resourceId = (JSONObject) jsonObject1.get("resouceId");
+                    String videoId = resourceId.get("videoId").toString();
                     String title = snippet.get("title").toString();
                     String publishedAt = snippet.get("publishedAt").toString().substring(0, 10);
                     JSONObject thumbnails = (JSONObject) snippet.get("thumbnails");

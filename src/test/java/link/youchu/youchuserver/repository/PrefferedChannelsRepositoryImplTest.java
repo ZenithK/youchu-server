@@ -12,11 +12,11 @@ import javax.transaction.Transactional;
 @Transactional
 class PrefferedChannelsRepositoryImplTest {
 
-    Long user_id = 1L;
-    Long channel_index = 1L;
-
-    @Autowired
-    private PrefferedChannelsRepository repository;
+//    Long user_id = 1L;
+//    Long channel_index = 1L;
+//
+//    @Autowired
+//    private PrefferedChannelsRepository repository;
 
 
 }

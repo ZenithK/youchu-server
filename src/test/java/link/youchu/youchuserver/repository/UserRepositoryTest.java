@@ -18,21 +18,20 @@ import static org.junit.jupiter.api.Assertions.*;
 @Transactional
 class UserRepositoryTest {
 
-    UserService userService;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    EntityManager em;
-
-    @Test
-    public void basicTest(){
-        UserSearchCondition condition = new UserSearchCondition();
-        condition.setUser_id(1L);
-
-
-        System.out.println(userRepository.getUserData(condition));
-    }
+//    UserService userService;
+//
+//    @Autowired
+//    UserRepository userRepository;
+//
+//    @Autowired
+//    EntityManager em;
+//
+//    @Test
+//    public void basicTest(){
+//        UserSearchCondition condition = new UserSearchCondition();
+//        condition.setUser_id(1L);
+//
+//        System.out.println(userRepository.getUserData(condition));
+//    }
 
 }
