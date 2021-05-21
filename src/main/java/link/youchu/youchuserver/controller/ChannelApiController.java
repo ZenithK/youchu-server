@@ -59,6 +59,27 @@ public class ChannelApiController {
        }
     }
 
+    @GetMapping("/relate")
+    public ResponseEntity<Message> getRelatedChannel(UserSearchCondition condition, Pageable pageable){
+        try{
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(200L);
+            message.setMessage("Success");
+            message.setData(channelService.getRelatedChannel(condition,pageable));
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+
+        }catch (Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(400L);
+            message.setMessage("잘못된 요청입니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
+
     @GetMapping("/rank")
     public ResponseEntity<Message> getRankingChannelByTopic(TopicSearchCondition condition, Pageable pageable){
         try{

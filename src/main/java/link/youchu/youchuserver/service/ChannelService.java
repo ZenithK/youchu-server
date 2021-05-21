@@ -2,7 +2,7 @@ package link.youchu.youchuserver.service;
 
 import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.Http.ComplexMessage;
-import link.youchu.youchuserver.domain.VideoDto;
+import link.youchu.youchuserver.Dto.VideoDto;
 import link.youchu.youchuserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.json.simple.parser.ParseException;

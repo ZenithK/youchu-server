@@ -5,7 +5,6 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import link.youchu.youchuserver.Dto.*;
-import link.youchu.youchuserver.domain.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -105,14 +103,22 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 for(int i=0; i<videoItems.size();i++){
                     JSONObject jsonObject1 = (JSONObject) videoItems.get(i);
                     JSONObject snippet = (JSONObject) jsonObject1.get("snippet");
-                    JSONObject resourceId = (JSONObject) jsonObject1.get("resouceId");
+                    JSONObject resourceId = (JSONObject) snippet.get("resourceId");
                     String videoId = resourceId.get("videoId").toString();
+                    String videoRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
+                            .queryParam("part", "statistics")
+                            .queryParam("id", videoId)
+                            .queryParam("key",api_key)
+                            .encode().toUriString();
+                    String videos = restTemplate.getForObject(videoRequest, String.class);
+                    JSONObject parse1 = (JSONObject) parser.parse(videos);
+                    Long viewCount = Long.parseLong(((JSONObject) ((JSONObject) ((JSONArray) parse1.get("items")).get(0)).get("statistics")).get("viewCount").toString());
                     String title = snippet.get("title").toString();
                     String publishedAt = snippet.get("publishedAt").toString().substring(0, 10);
                     JSONObject thumbnails = (JSONObject) snippet.get("thumbnails");
                     JSONObject medium = (JSONObject) thumbnails.get("medium");
                     String url = medium.get("url").toString();
-                    VideoDto videoDto = new VideoDto(url, title, publishedAt);
+                    VideoDto videoDto = new VideoDto(url, title, publishedAt,viewCount);
                     channelVideo.add(videoDto);
                 }
 

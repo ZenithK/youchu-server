@@ -1,4 +1,4 @@
-package link.youchu.youchuserver.domain;
+package link.youchu.youchuserver.Dto;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Data;
@@ -8,11 +8,13 @@ public class VideoDto {
     private String videoProfile;
     private String title;
     private String publishedAt;
+    private Long viewCount;
 
     @QueryProjection
-    public VideoDto(String videoProfile, String title, String publishedAt) {
+    public VideoDto(String videoProfile, String title, String publishedAt, Long viewCount) {
         this.videoProfile = videoProfile;
         this.title = title;
         this.publishedAt = publishedAt;
+        this.viewCount = viewCount;
     }
 }

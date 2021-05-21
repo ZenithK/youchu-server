@@ -1,7 +1,7 @@
 package link.youchu.youchuserver.repository;
 
 import link.youchu.youchuserver.Dto.*;
-import link.youchu.youchuserver.domain.VideoDto;
+import link.youchu.youchuserver.Dto.VideoDto;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
