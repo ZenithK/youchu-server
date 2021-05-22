@@ -32,7 +32,7 @@ import static link.youchu.youchuserver.domain.QDislikeChannels.*;
 import static link.youchu.youchuserver.domain.QPrefferedChannels.*;
 import static link.youchu.youchuserver.domain.QTopic.*;
 
-public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
+public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     @Value("${api.address}")
     private String scoring_url;
@@ -48,9 +48,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public ChannelDto getChannelData(ChannelSearchCondition condition) {
         return queryFactory
-                .select(new QChannelDto(channel.id,channel.title,channel.description,channel.publishedAt,
-                channel.thumbnail,channel.viewCount,channel.subScribeCount,channel.bannerImage,
-                        channel.video_count,channel.channel_id))
+                .select(new QChannelDto(channel.id, channel.title, channel.description, channel.publishedAt,
+                        channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
+                        channel.video_count, channel.channel_id))
                 .from(channel)
                 .where(channelIdEq(condition.getChannel_id()),
                         channelIndexEq(condition.getChannel_index()))
@@ -65,7 +65,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
             int count = 0;
             // Channel playlist
             String requestUrl = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlists")
-                    .queryParam("part","contentDetails")
+                    .queryParam("part", "contentDetails")
                     .queryParam("channelId", channel_id)
                     .queryParam("key", api_key).encode().toUriString();
 
@@ -93,7 +93,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
             for (String playlistId : playlist) {
                 String itemRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlistItems")
-                        .queryParam("part","snippet")
+                        .queryParam("part", "snippet")
                         .queryParam("playlistId", playlistId)
                         .queryParam("key", api_key).encode().toUriString();
 
@@ -102,7 +102,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 JSONObject json = (JSONObject) parser.parse(resultVideo);
                 JSONArray videoItems = (JSONArray) json.get("items");
 
-                for(int i=0; i<videoItems.size();i++){
+                for (int i = 0; i < videoItems.size(); i++) {
                     JSONObject jsonObject1 = (JSONObject) videoItems.get(i);
                     JSONObject snippet = (JSONObject) jsonObject1.get("snippet");
                     JSONObject resourceId = (JSONObject) snippet.get("resourceId");
@@ -110,7 +110,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                     String videoRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
                             .queryParam("part", "statistics")
                             .queryParam("id", videoId)
-                            .queryParam("key",api_key)
+                            .queryParam("key", api_key)
                             .encode().toUriString();
                     String videos = restTemplate.getForObject(videoRequest, String.class);
                     JSONObject parse1 = (JSONObject) parser.parse(videos);
@@ -120,25 +120,25 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                     JSONObject thumbnails = (JSONObject) snippet.get("thumbnails");
                     JSONObject medium = (JSONObject) thumbnails.get("medium");
                     String url = medium.get("url").toString();
-                    VideoDto videoDto = new VideoDto(url, title, publishedAt,viewCount);
+                    VideoDto videoDto = new VideoDto(url, title, publishedAt, viewCount);
                     channelVideo.add(videoDto);
                 }
 
             }
 
         } catch (ParseException e) {
-            throw new ParseException(0,"채널에 업로드된 영상이 없습니다.");
-        } catch (HttpClientErrorException e){
+            throw new ParseException(0, "채널에 업로드된 영상이 없습니다.");
+        } catch (HttpClientErrorException e) {
             throw new InvalidKeyException();
         }
         return channelVideo;
     }
 
-    private BooleanExpression channelIdEq(String channel_id){
+    private BooleanExpression channelIdEq(String channel_id) {
         return channel_id == null ? null : channel.channel_id.eq(channel_id);
     }
 
-    private BooleanExpression channelIndexEq(Long channel_index){
+    private BooleanExpression channelIndexEq(Long channel_index) {
         return channel_index == null ? null : channel.id.eq(channel_index);
     }
 
@@ -146,7 +146,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public Page<SimpleDtoPlusBanner> getChannelByTopic(TopicSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleDtoPlusBanner> results = queryFactory
-                .select(new QSimpleDtoPlusBanner(channelTopic.channel.id,channelTopic.channel.title,channelTopic.channel.thumbnail,channelTopic.channel.subScribeCount,channelTopic.channel.bannerImage,channelTopic.channel.channel_id))
+                .select(new QSimpleDtoPlusBanner(channelTopic.channel.id, channelTopic.channel.title, channelTopic.channel.thumbnail, channelTopic.channel.subScribeCount, channelTopic.channel.bannerImage, channelTopic.channel.channel_id))
                 .distinct()
                 .from(channelTopic)
                 .join(channelTopic.topic, topic)
@@ -163,17 +163,18 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression country(){
+    private BooleanExpression country() {
         return channelTopic.channel.country.eq("KR");
     }
 
-    private BooleanExpression topicIdEq(Long topic_id){
+    private BooleanExpression topicIdEq(Long topic_id) {
         return topic_id == null ? null : channelTopic.topic.id.eq(topic_id);
     }
 
     private BooleanExpression topicNameEq(String topic_name) {
         return topic_name == null ? null : channelTopic.topic.topic_name.eq(topic_name);
     }
+
     private BooleanExpression keywordIdEq(Long keyword_id) {
         return keyword_id == null ? null : channelKeyword.keyword.id.eq(keyword_id);
     }
@@ -181,7 +182,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public Page<SimpleDtoPlusBanner> getChannelByKeyword(KeywordSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleDtoPlusBanner> results = queryFactory
-                .select(new QSimpleDtoPlusBanner(channelKeyword.channel.id,channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.bannerImage,channelKeyword.channel.channel_id))
+                .select(new QSimpleDtoPlusBanner(channelKeyword.channel.id, channelKeyword.channel.title, channelKeyword.channel.thumbnail, channelKeyword.channel.subScribeCount, channelKeyword.channel.bannerImage, channelKeyword.channel.channel_id))
                 .from(channelKeyword)
                 .join(channelKeyword.channel, channel)
                 .where(keywordIdEq(condition.getKeyword_id()),
@@ -200,7 +201,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     @Override
     public Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable) {
         QueryResults<SimpleChannelDto> results = queryFactory
-                .select(new QSimpleChannelDto(channelKeyword.channel.id,channelKeyword.channel.title,channelKeyword.channel.thumbnail,channelKeyword.channel.subScribeCount,channelKeyword.channel.channel_id))
+                .select(new QSimpleChannelDto(channelKeyword.channel.id, channelKeyword.channel.title, channelKeyword.channel.thumbnail, channelKeyword.channel.subScribeCount, channelKeyword.channel.channel_id))
                 .distinct()
                 .from(channelKeyword)
                 .join(channelKeyword.channel, channel)
@@ -237,7 +238,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         result.addAll(resultPrefer);
 
         List<ChannelDto> list = queryFactory
-                .select(new QChannelDto(channel.id,channel.title, channel.description, channel.publishedAt,
+                .select(new QChannelDto(channel.id, channel.title, channel.description, channel.publishedAt,
                         channel.thumbnail, channel.viewCount, channel.subScribeCount, channel.bannerImage,
                         channel.video_count, channel.channel_id))
                 .from(channel)
@@ -249,7 +250,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
     }
 
-    private BooleanExpression preferUserIdEq(Long user_id){
+    private BooleanExpression preferUserIdEq(Long user_id) {
         return user_id == null ? null : prefferedChannels.users.user_id.eq(user_id);
     }
 
@@ -257,28 +258,28 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         return google_user_id == null ? null : prefferedChannels.users.google_user_id.eq(google_user_id);
     }
 
-    private BooleanExpression dislikeUserIdEq(Long user_id){
+    private BooleanExpression dislikeUserIdEq(Long user_id) {
         return user_id == null ? null : dislikeChannels.users.user_id.eq(user_id);
     }
 
-    private BooleanExpression dislikeGoogleIdEq(String google_user_id){
+    private BooleanExpression dislikeGoogleIdEq(String google_user_id) {
         return google_user_id == null ? null : dislikeChannels.users.google_user_id.eq(google_user_id);
     }
 
-    private BooleanExpression channelIndexNEq(List<Long> channelIndices){
+    private BooleanExpression channelIndexNEq(List<Long> channelIndices) {
         return channelIndices == null ? null : channel.id.notIn(channelIndices);
     }
 
     @Override
     public SimpleChannelDto getRecommnedChannel(Long index) {
-        return queryFactory.select(new QSimpleChannelDto(channel.id,channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+        return queryFactory.select(new QSimpleChannelDto(channel.id, channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
                 .from(channel)
                 .where(channelIndexEq(index))
                 .fetchOne();
     }
 
     @Override
-    public Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable,UserSearchCondition condition) {
+    public Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices, Pageable pageable, UserSearchCondition condition) {
         List<Long> result = queryFactory.select(dislikeChannels.channel.id)
                 .from(dislikeChannels)
                 .where(dislikeUserIdEq(condition.getUser_id()),
@@ -292,7 +293,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
                 .fetch();
         result.addAll(resultPrefer);
 
-        QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.id,channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+        QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.id, channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
                 .from(channel)
                 .where(channelIndicesEq(channel_indices),
                         channelIndexNEq(result))
@@ -306,11 +307,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         return new PageImpl<>(content, pageable, total);
     }
 
-    private BooleanExpression channelIndicesEq(List<Long> channel_indices){
-        if(channel_indices == null){
+    private BooleanExpression channelIndicesEq(List<Long> channel_indices) {
+        if (channel_indices == null) {
             return null;
-        }
-        else{
+        } else {
             return channel.id.in(channel_indices);
         }
     }
@@ -328,17 +328,24 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     public List<Long> getSimilarChannel(List<Integer> data) {
         try {
             RestTemplate restTemplate = new RestTemplate();
-            Map<String,List<Integer>> map = new HashMap<>();
-            map.put("data",data);
+            Map<String, List<Integer>> map = new HashMap<>();
+            map.put("data", data);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             Gson gson = new Gson();
             String json = new Gson().toJson(map);
-            HttpEntity entity = new HttpEntity(json,headers);
-
-            Object[] o = restTemplate.postForObject(scoring_url+"/recommand", entity, Object[].class);
-            return (List<Long>) (o[0]);
-        }catch (Exception e){
+            HttpEntity entity = new HttpEntity(json, headers);
+            JSONParser parser = new JSONParser();
+            String resultJson = restTemplate.postForObject(scoring_url + "/recommand", entity, String.class);
+            JSONArray parse = (JSONArray) parser.parse(resultJson);
+            JSONArray jsonArray = (JSONArray) parse.get(0);
+            List<String> list = (List<String>) jsonArray.get(0);
+            List<Long> channels = new ArrayList<>();
+            for (String s : list) {
+                channels.add(Long.parseLong(s));
+            }
+            return channels;
+        } catch (Exception e) {
             System.out.println(e);
         }
 
@@ -351,18 +358,26 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         try {
             RestTemplate restTemplate = new RestTemplate();
             Map<String, Long> map = new HashMap<>();
-            map.put("channel",channel_index);
+            map.put("channel", channel_index);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             Gson gson = new Gson();
             String json = new Gson().toJson(map);
-            HttpEntity entity = new HttpEntity(json,headers);
+            HttpEntity entity = new HttpEntity(json, headers);
 
-            Object[] o = restTemplate.postForObject(scoring_url+"/channel", entity, Object[].class);
-            return (List<Long>) (o[0]);
-        }catch (Exception e){
-            System.out.println(e);
+            String resultJson = restTemplate.postForObject(scoring_url + "/channel", entity, String.class);
+            JSONParser parser = new JSONParser();
+            JSONArray parse = (JSONArray) parser.parse(resultJson);
+            JSONArray jsonArray = (JSONArray) parse.get(0);
+            List<String> list = (List<String>) jsonArray.get(0);
+            List<Long> channels = new ArrayList<>();
+            for (String s : list) {
+                channels.add(Long.parseLong(s));
+            }
+                return channels;
+            }catch(ParseException e){
+                e.printStackTrace();
+            }
+            return null;
         }
-        return null;
     }
-}

@@ -5,6 +5,7 @@ import link.youchu.youchuserver.Http.ComplexMessage;
 import link.youchu.youchuserver.Dto.VideoDto;
 import link.youchu.youchuserver.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.JSONArray;
 import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,10 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.security.InvalidKeyException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -116,10 +114,9 @@ public class ChannelService {
     @Transactional
     public ComplexMessage getRelatedChannel(UserSearchCondition condition, Pageable pageable){
         Page<SimpleChannelDto> recommendChannel = getRecommendChannel(condition, pageable);
-        Random random = new Random();
         List<SimpleChannelDto> content = recommendChannel.getContent();
-        int randValue = random.nextInt(content.size());
-        SimpleChannelDto simpleChannelDto = content.get(randValue);
+        Collections.shuffle(content);
+        SimpleChannelDto simpleChannelDto = content.get(0);
         List<Long> channels = channelRepository.getRelatedChannel(simpleChannelDto.getChannel_index());
         channels.forEach(s->s=s+1);
         UserSearchCondition userSearchCondition = new UserSearchCondition();
@@ -163,7 +160,7 @@ public class ChannelService {
             }
         }
 
-        System.out.println(channelRepository.getSimilarChannel(data));
+        recommendIndex = channelRepository.getSimilarChannel(data);
 
         System.out.println(recommendIndex);
         return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
