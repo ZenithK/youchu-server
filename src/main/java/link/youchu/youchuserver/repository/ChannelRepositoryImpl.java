@@ -337,7 +337,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             HttpEntity entity = new HttpEntity(json, headers);
             JSONParser parser = new JSONParser();
             String resultJson = restTemplate.postForObject(scoring_url + "/recommand", entity, String.class);
-            JSONArray parse = (JSONArray) parser.parse(resultJson);
+            Object obj = parser.parse(resultJson);
+            JSONArray parse = (JSONArray) obj;
             JSONArray jsonArray = (JSONArray) parse.get(0);
             List<Long> channels = new ArrayList<>();
             if (jsonArray != null) {
