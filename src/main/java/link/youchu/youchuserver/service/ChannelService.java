@@ -113,19 +113,29 @@ public class ChannelService {
 
     @Transactional
     public ComplexMessage getRelatedChannel(UserSearchCondition condition, Pageable pageable){
-        Page<SimpleChannelDto> recommendChannel = getRecommendChannel(condition, pageable);
-        List<SimpleChannelDto> content = recommendChannel.getContent();
-        Collections.shuffle(content);
-        SimpleChannelDto simpleChannelDto = content.get(0);
-        System.out.println(simpleChannelDto);
-        List<Long> channels = channelRepository.getRelatedChannel(simpleChannelDto.getChannel_index());
+        List<Long> preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        List<Long> recommendIndex = new ArrayList<>();
+        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
+        if(preferIndex != null){
+            for(Long index : preferIndex){
+                data.set((int) (index - 1), 1);
+            }
+        }
+
+        recommendIndex = channelRepository.getSimilarChannel(data);
+        Random random = new Random();
+        Long randValue = recommendIndex.get(random.nextInt(recommendIndex.size()));
+        ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
+        channelSearchCondition.setChannel_index(randValue);
+        ChannelDto channelData = getChannelData(channelSearchCondition);
+        List<Long> channels = channelRepository.getRelatedChannel(randValue);
         channels.forEach(s->s=s+1);
         UserSearchCondition userSearchCondition = new UserSearchCondition();
         userSearchCondition.setUser_id(condition.getUser_id());
         ComplexMessage message = new ComplexMessage();
         Page<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
         message.setData(recommendChannelList);
-        message.setStandardValue(simpleChannelDto.getTitle());
+        message.setStandardValue(channelData.getTitle());
         return message;
     }
 
@@ -162,7 +172,7 @@ public class ChannelService {
         }
 
         recommendIndex = channelRepository.getSimilarChannel(data);
-
+        recommendIndex.stream().forEach(s->s=s+1);
         System.out.println(recommendIndex);
         return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
     }

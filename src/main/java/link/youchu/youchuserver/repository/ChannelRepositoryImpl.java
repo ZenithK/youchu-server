@@ -369,8 +369,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
             String resultJson = restTemplate.postForObject(scoring_url + "/channel", entity, String.class);
             JSONParser parser = new JSONParser();
-            JSONArray parse = (JSONArray) parser.parse(resultJson);
-            JSONArray jsonArray = (JSONArray) parse.get(0);
+            Object parse = parser.parse(resultJson);
+            JSONArray jsonArray = (JSONArray) parse;
             List<Long> channels = new ArrayList<>();
             if (jsonArray != null) {
                 for (int i = 0; i < jsonArray.size(); i++) {
