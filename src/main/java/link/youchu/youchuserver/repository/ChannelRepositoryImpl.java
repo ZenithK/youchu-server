@@ -339,10 +339,11 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             String resultJson = restTemplate.postForObject(scoring_url + "/recommand", entity, String.class);
             JSONArray parse = (JSONArray) parser.parse(resultJson);
             JSONArray jsonArray = (JSONArray) parse.get(0);
-            List<String> list = (List<String>) jsonArray.get(0);
             List<Long> channels = new ArrayList<>();
-            for (String s : list) {
-                channels.add(Long.parseLong(s));
+            if (jsonArray != null) {
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    channels.add(Long.parseLong(jsonArray.get(i).toString()));
+                }
             }
             return channels;
         } catch (Exception e) {
@@ -369,10 +370,11 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             JSONParser parser = new JSONParser();
             JSONArray parse = (JSONArray) parser.parse(resultJson);
             JSONArray jsonArray = (JSONArray) parse.get(0);
-            List<String> list = (List<String>) jsonArray.get(0);
             List<Long> channels = new ArrayList<>();
-            for (String s : list) {
-                channels.add(Long.parseLong(s));
+            if (jsonArray != null) {
+                for (int i = 0; i < jsonArray.size(); i++) {
+                    channels.add(Long.parseLong(jsonArray.get(i).toString()));
+                }
             }
                 return channels;
             }catch(ParseException e){
