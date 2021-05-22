@@ -21,4 +21,5 @@ public interface ChannelRepositoryCustom {
     SimpleChannelDto getRecommnedChannel(Long index);
     List<VideoDto> getChannelVideo(String channel_id) throws ParseException, InvalidKeyException;
     List<Long> getRelatedChannel(Long channel_index);
+    Page<SimpleChannelDto> getChannelRandom(Pageable pageable);
 }

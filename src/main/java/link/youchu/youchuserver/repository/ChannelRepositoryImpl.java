@@ -308,6 +308,21 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         return new PageImpl<>(content, pageable, total);
     }
 
+    @Override
+    public Page<SimpleChannelDto> getChannelRandom(Pageable pageable) {
+        QueryResults<SimpleChannelDto> results = queryFactory.select(new QSimpleChannelDto(channel.id, channel.title, channel.thumbnail, channel.subScribeCount, channel.channel_id))
+                .from(channel)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
+
+        List<SimpleChannelDto> list = results.getResults();
+
+        long total = results.getTotal();
+
+        return new PageImpl<>(list, pageable, total);
+    }
+
     private BooleanExpression channelIndicesEq(List<Long> channel_indices) {
         if (channel_indices == null) {
             return null;

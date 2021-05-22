@@ -125,23 +125,29 @@ public class ChannelService {
             for(Long index : preferIndex){
                 data.set((int) (index - 1), 1);
             }
+            recommendIndex = channelRepository.getSimilarChannel(data);
+            Random random = new Random();
+            Long randValue = recommendIndex.get(random.nextInt(recommendIndex.size()));
+            ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
+            channelSearchCondition.setChannel_index(randValue);
+            ChannelDto channelData = getChannelData(channelSearchCondition);
+            List<Long> channels = channelRepository.getRelatedChannel(randValue);
+            channels.forEach(s->s=s+1);
+            UserSearchCondition userSearchCondition = new UserSearchCondition();
+            userSearchCondition.setUser_id(condition.getUser_id());
+            ComplexMessage message = new ComplexMessage();
+            Page<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
+            message.setData(recommendChannelList);
+            message.setStandardValue(channelData.getTitle());
+            return message;
+        }else{
+            Page<SimpleChannelDto> channelDtos = channelRepository.getChannelRandom(pageable);
+            ComplexMessage message = new ComplexMessage();
+            message.setData(channelDtos);
+            return message;
         }
 
-        recommendIndex = channelRepository.getSimilarChannel(data);
-        Random random = new Random();
-        Long randValue = recommendIndex.get(random.nextInt(recommendIndex.size()));
-        ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
-        channelSearchCondition.setChannel_index(randValue);
-        ChannelDto channelData = getChannelData(channelSearchCondition);
-        List<Long> channels = channelRepository.getRelatedChannel(randValue);
-        channels.forEach(s->s=s+1);
-        UserSearchCondition userSearchCondition = new UserSearchCondition();
-        userSearchCondition.setUser_id(condition.getUser_id());
-        ComplexMessage message = new ComplexMessage();
-        Page<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
-        message.setData(recommendChannelList);
-        message.setStandardValue(channelData.getTitle());
-        return message;
+
     }
 
     @Transactional
@@ -179,12 +185,15 @@ public class ChannelService {
             for(Long index : preferIndex){
                 data.set((int) (index - 1), 1);
             }
+            recommendIndex = channelRepository.getSimilarChannel(data);
+            recommendIndex.stream().forEach(s->s=s+1);
+            System.out.println(recommendIndex);
+            return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
+        }else{
+           return channelRepository.getChannelRandom(pageable);
         }
 
-        recommendIndex = channelRepository.getSimilarChannel(data);
-        recommendIndex.stream().forEach(s->s=s+1);
-        System.out.println(recommendIndex);
-        return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
+
     }
 
 }
