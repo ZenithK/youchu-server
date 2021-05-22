@@ -314,6 +314,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
                 .from(channel)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
+                .orderBy(channel.subScribeCount.desc())
                 .fetchResults();
 
         List<SimpleChannelDto> list = results.getResults();
@@ -369,6 +370,53 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
 
         return null;
+    }
+
+    @Override
+    public Page<SimpleDtoPlusBanner> getRelateChannelList(List<Long> channel_indices, Pageable pageable, UserSearchCondition condition) {
+        List<Long> result = queryFactory.select(dislikeChannels.channel.id)
+                .from(dislikeChannels)
+                .where(dislikeUserIdEq(condition.getUser_id()),
+                        dislikeGoogleIdEq(condition.getGoogle_user_id()))
+                .fetch();
+
+        List<Long> resultPrefer = queryFactory.select(prefferedChannels.channel.id)
+                .from(prefferedChannels)
+                .where(preferUserIdEq(condition.getUser_id()),
+                        preferGoogleIdEq(condition.getGoogle_user_id()))
+                .fetch();
+        result.addAll(resultPrefer);
+
+        QueryResults<SimpleDtoPlusBanner> results = queryFactory.select(new QSimpleDtoPlusBanner(channel.id, channel.title, channel.thumbnail, channel.subScribeCount, channel.bannerImage, channel.channel_id))
+                .from(channel)
+                .where(channelIndicesEq(channel_indices),
+                        channelIndexNEq(result))
+                .orderBy(channel.subScribeCount.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetchResults();
+
+
+        List<SimpleDtoPlusBanner> content = results.getResults();
+        long total = results.getTotal();
+
+        return new PageImpl<>(content, pageable, total);
+    }
+
+    @Override
+    public Page<SimpleDtoPlusBanner> getRandomChannelBanner(Pageable pageable) {
+        QueryResults<SimpleDtoPlusBanner> results = queryFactory.select(new QSimpleDtoPlusBanner(channel.id, channel.title, channel.thumbnail, channel.subScribeCount, channel.bannerImage, channel.channel_id))
+                .from(channel)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(channel.subScribeCount.desc())
+                .fetchResults();
+
+        List<SimpleDtoPlusBanner> list = results.getResults();
+
+        long total = results.getTotal();
+
+        return new PageImpl<>(list, pageable, total);
     }
 
     @Override

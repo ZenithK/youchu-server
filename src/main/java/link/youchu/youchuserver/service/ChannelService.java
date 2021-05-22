@@ -113,15 +113,15 @@ public class ChannelService {
 
     @Transactional
     public ComplexMessage getRelatedChannel(UserSearchCondition condition, Pageable pageable){
-        List<Long> preferIndex = new ArrayList<>();
+        List<Long> preferIndex = null;
         try {
             preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
         }catch (Exception e){
-
+            e.printStackTrace();
         }
         List<Long> recommendIndex = new ArrayList<>();
         List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
-        if(preferIndex != null){
+        if(preferIndex.size()!=0){
             for(Long index : preferIndex){
                 data.set((int) (index - 1), 1);
             }
@@ -136,12 +136,12 @@ public class ChannelService {
             UserSearchCondition userSearchCondition = new UserSearchCondition();
             userSearchCondition.setUser_id(condition.getUser_id());
             ComplexMessage message = new ComplexMessage();
-            Page<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
+            Page<SimpleDtoPlusBanner> recommendChannelList = channelRepository.getRelateChannelList(channels, pageable, userSearchCondition);
             message.setData(recommendChannelList);
             message.setStandardValue(channelData.getTitle());
             return message;
         }else{
-            Page<SimpleChannelDto> channelDtos = channelRepository.getChannelRandom(pageable);
+            Page<SimpleDtoPlusBanner> channelDtos = channelRepository.getRandomChannelBanner(pageable);
             ComplexMessage message = new ComplexMessage();
             message.setData(channelDtos);
             return message;
@@ -173,15 +173,15 @@ public class ChannelService {
 
     @Transactional
     public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
-        List<Long> preferIndex = new ArrayList<>();
+        List<Long> preferIndex = null;
         try {
             preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
         }catch (Exception e){
-
+            e.printStackTrace();
         }
         List<Long> recommendIndex = new ArrayList<>();
         List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
-        if(preferIndex != null){
+        if(preferIndex.size() != 0){
             for(Long index : preferIndex){
                 data.set((int) (index - 1), 1);
             }
