@@ -113,7 +113,12 @@ public class ChannelService {
 
     @Transactional
     public ComplexMessage getRelatedChannel(UserSearchCondition condition, Pageable pageable){
-        List<Long> preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        List<Long> preferIndex = new ArrayList<>();
+        try {
+            preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        }catch (Exception e){
+
+        }
         List<Long> recommendIndex = new ArrayList<>();
         List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
         if(preferIndex != null){
@@ -162,7 +167,12 @@ public class ChannelService {
 
     @Transactional
     public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
-        List<Long> preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        List<Long> preferIndex = new ArrayList<>();
+        try {
+            preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        }catch (Exception e){
+
+        }
         List<Long> recommendIndex = new ArrayList<>();
         List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
         if(preferIndex != null){
