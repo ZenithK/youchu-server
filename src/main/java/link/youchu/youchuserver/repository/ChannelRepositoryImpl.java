@@ -64,9 +64,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         try {
             int count = 0;
             // Channel playlist
-            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlists")
+            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/channels")
                     .queryParam("part", "contentDetails")
-                    .queryParam("channelId", channel_id)
+                    .queryParam("id", channel_id)
                     .queryParam("key", api_key).encode().toUriString();
 
             JSONParser parser = new JSONParser();
@@ -74,59 +74,42 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             // playlist result
             String resultJson = restTemplate.getForObject(requestUrl, String.class);
 
-            List<String> playlist = new ArrayList<>();
-
             Object parse = parser.parse(resultJson);
             JSONObject jsonObject = (JSONObject) parse;
             JSONArray items = (JSONArray) jsonObject.get("items");
+            String uploads = ((JSONObject)((JSONObject)((JSONObject) items.get(0)).get("contentDetails")).get("relatedPlaylists")).get("uploads").toString();
 
-            for (int i = 0; i < items.size(); i++) {
-                JSONObject json = (JSONObject) items.get(i);
-                playlist.add(json.get("id").toString());
-                JSONObject object = (JSONObject) json.get("contentDetails");
-                int itemCount = Integer.parseInt(object.get("itemCount").toString());
-                count += itemCount;
-                if (count >= 10) {
-                    break;
-                }
-            }
+            String itemRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlistItems")
+                    .queryParam("part", "contentDetails")
+                    .queryParam("playlistId", uploads)
+                    .queryParam("maxResults", 10)
+                    .queryParam("key", api_key).encode().toUriString();
 
-            for (String playlistId : playlist) {
-                String itemRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/playlistItems")
-                        .queryParam("part", "snippet")
-                        .queryParam("playlistId", playlistId)
-                        .queryParam("key", api_key).encode().toUriString();
+            String resultVideo = restTemplate.getForObject(itemRequest, String.class);
 
-                String resultVideo = restTemplate.getForObject(itemRequest, String.class);
+            JSONObject json = (JSONObject) parser.parse(resultVideo);
+            JSONArray videoItems = (JSONArray) json.get("items");
 
-                JSONObject json = (JSONObject) parser.parse(resultVideo);
-                JSONArray videoItems = (JSONArray) json.get("items");
-
-                for (int i = 0; i < videoItems.size(); i++) {
-                    JSONObject jsonObject1 = (JSONObject) videoItems.get(i);
-                    JSONObject snippet = (JSONObject) jsonObject1.get("snippet");
-                    JSONObject resourceId = (JSONObject) snippet.get("resourceId");
-                    String videoId = resourceId.get("videoId").toString();
-                    String videoRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
-                            .queryParam("part", "statistics")
+            for (int i = 0; i < videoItems.size(); i++) {
+                JSONObject jsonObject1 = (JSONObject) videoItems.get(i);
+                JSONObject content = (JSONObject) jsonObject1.get("contentDetails");
+                String videoId = content.get("videoId").toString();
+                String videoPublishedAt = content.get("videoPublishedAt").toString().substring(0, 10);
+                String videoRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
+                            .queryParam("part", "snippet,statistics")
                             .queryParam("id", videoId)
                             .queryParam("key", api_key)
                             .encode().toUriString();
-                    String videos = restTemplate.getForObject(videoRequest, String.class);
-                    JSONObject parse1 = (JSONObject) parser.parse(videos);
-                    Long viewCount = Long.parseLong(((JSONObject) ((JSONObject) ((JSONArray) parse1.get("items")).get(0)).get("statistics")).get("viewCount").toString());
-                    String title = snippet.get("title").toString();
-                    String publishedAt = snippet.get("publishedAt").toString().substring(0, 10);
-                    JSONObject thumbnails = (JSONObject) snippet.get("thumbnails");
-                    JSONObject medium = (JSONObject) thumbnails.get("medium");
-                    String url = medium.get("url").toString();
-                    VideoDto videoDto = new VideoDto(url, title, publishedAt, viewCount);
-                    channelVideo.add(videoDto);
+                String videos = restTemplate.getForObject(videoRequest, String.class);
+                JSONObject parse1 = (JSONObject) parser.parse(videos);
+                JSONArray jsonArray = (JSONArray) parse1.get("items");
+                Long viewCount = Long.parseLong(((JSONObject) ((JSONObject) jsonArray.get(0)).get("statistics")).get("viewCount").toString());
+                String title = ((JSONObject) ((JSONObject) jsonArray.get(0)).get("snippet")).get("title").toString();
+                String url = ((JSONObject) ((JSONObject) ((JSONObject) ((JSONObject) jsonArray.get(0)).get("snippet")).get("thumbnails")).get("medium")).get("url").toString();
+                VideoDto videoDto = new VideoDto(url, title, videoPublishedAt, viewCount);
+                channelVideo.add(videoDto);
                 }
-
-            }
-
-        } catch (ParseException e) {
+        } catch (ParseException | HttpClientErrorException.NotFound e) {
             throw new ParseException(0, "채널에 업로드된 영상이 없습니다.");
         } catch (HttpClientErrorException e) {
             throw new InvalidKeyException();
