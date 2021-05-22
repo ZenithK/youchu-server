@@ -117,6 +117,7 @@ public class ChannelService {
         List<SimpleChannelDto> content = recommendChannel.getContent();
         Collections.shuffle(content);
         SimpleChannelDto simpleChannelDto = content.get(0);
+        System.out.println(simpleChannelDto);
         List<Long> channels = channelRepository.getRelatedChannel(simpleChannelDto.getChannel_index());
         channels.forEach(s->s=s+1);
         UserSearchCondition userSearchCondition = new UserSearchCondition();
