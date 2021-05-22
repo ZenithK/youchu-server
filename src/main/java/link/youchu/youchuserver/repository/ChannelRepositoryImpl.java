@@ -106,7 +106,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
                 Long viewCount = Long.parseLong(((JSONObject) ((JSONObject) jsonArray.get(0)).get("statistics")).get("viewCount").toString());
                 String title = ((JSONObject) ((JSONObject) jsonArray.get(0)).get("snippet")).get("title").toString();
                 String url = ((JSONObject) ((JSONObject) ((JSONObject) ((JSONObject) jsonArray.get(0)).get("snippet")).get("thumbnails")).get("medium")).get("url").toString();
-                VideoDto videoDto = new VideoDto(url, title, videoPublishedAt, viewCount);
+                VideoDto videoDto = new VideoDto(url, title, videoPublishedAt, viewCount,videoId);
                 channelVideo.add(videoDto);
                 }
         } catch (ParseException | HttpClientErrorException.NotFound e) {
