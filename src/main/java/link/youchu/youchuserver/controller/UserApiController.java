@@ -103,9 +103,6 @@ public class UserApiController {
             }else{
                 aLong = service.registerUser(condition);
             }
-            if(aLong == null){
-                throw new AuthenticationException();
-            }
             message.setData(aLong);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(AuthenticationException e) {

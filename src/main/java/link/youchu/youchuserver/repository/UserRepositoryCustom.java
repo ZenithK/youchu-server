@@ -3,16 +3,18 @@ package link.youchu.youchuserver.repository;
 import link.youchu.youchuserver.Dto.UserDto;
 import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
+import org.springframework.web.client.HttpClientErrorException;
 
+import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserRepositoryCustom {
     Long getUserIndex(UserSearchCondition condition);
     UserDto getUserData(UserSearchCondition condition);
-    List<String> registerUsers(UserPostCondition condition);
+    List<String> registerUsers(UserPostCondition condition) throws AuthenticationException, HttpClientErrorException;
 
-    List<String> updateUsers(UserPostCondition condition);
+    List<String> updateUsers(UserPostCondition condition) throws HttpClientErrorException.Unauthorized, AuthenticationException;
     Long userPreferChannel();
     Long userDislikeChannel();
     Long exitUser();

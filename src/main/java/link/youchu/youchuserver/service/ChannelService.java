@@ -117,7 +117,7 @@ public class ChannelService {
         Page<SimpleChannelDto> recommendChannel = getRecommendChannel(condition, pageable);
         Random random = new Random();
         List<SimpleChannelDto> content = recommendChannel.getContent();
-        int randValue = random.nextInt(content.size());
+        int randValue = random.nextInt((int)pageable.getOffset()* pageable.getPageNumber());
         SimpleChannelDto simpleChannelDto = content.get(randValue);
         List<Long> channels = channelRepository.getRelatedChannel(simpleChannelDto.getChannel_index());
         channels.forEach(s->s=s+1);
@@ -151,13 +151,16 @@ public class ChannelService {
     @Transactional
     public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
         List<Long> preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
+        List<Long> recommendIndex = new ArrayList<>();
         List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
-        for(Long index : preferIndex){
-            data.set((int) (index - 1), 1);
+        if(preferIndex != null){
+            for(Long index : preferIndex){
+                data.set((int) (index - 1), 1);
+            }
         }
-        List<Long> recommendIndex = channelRepository.getSimilarChannel(data);
-////        similarUsers.forEach(s->s=s+1);
-//        List<Long> index = datasetUserRepository.getChannelIndexByIndices(recommnedIndex);
+        recommendIndex = channelRepository.getSimilarChannel(data);
+
+        System.out.println(recommendIndex);
         return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
     }
 
