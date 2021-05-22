@@ -297,6 +297,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
                 .from(channel)
                 .where(channelIndicesEq(channel_indices),
                         channelIndexNEq(result))
+                .orderBy(channel.subScribeCount.desc())
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetchResults();
