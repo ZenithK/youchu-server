@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -113,22 +114,25 @@ public class ChannelService {
     }
 
     @Transactional
-    public Page<SimpleChannelDto> getRelatedChannel(UserSearchCondition condition, Pageable pageable){
+    public ComplexMessage getRelatedChannel(UserSearchCondition condition, Pageable pageable){
         Page<SimpleChannelDto> recommendChannel = getRecommendChannel(condition, pageable);
         Random random = new Random();
         List<SimpleChannelDto> content = recommendChannel.getContent();
-        int randValue = random.nextInt((int)pageable.getOffset()* pageable.getPageNumber());
+        int randValue = random.nextInt(content.size());
         SimpleChannelDto simpleChannelDto = content.get(randValue);
         List<Long> channels = channelRepository.getRelatedChannel(simpleChannelDto.getChannel_index());
         channels.forEach(s->s=s+1);
         UserSearchCondition userSearchCondition = new UserSearchCondition();
         userSearchCondition.setUser_id(condition.getUser_id());
-        return channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
-
+        ComplexMessage message = new ComplexMessage();
+        Page<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(channels, pageable, userSearchCondition);
+        message.setData(recommendChannelList);
+        message.setStandardValue(simpleChannelDto.getTitle());
+        return message;
     }
 
     @Transactional
-    public List<VideoDto> getLatestChannel(ChannelSearchCondition condition) throws ParseException {
+    public List<VideoDto> getLatestChannel(ChannelSearchCondition condition) throws ParseException, InvalidKeyException {
         return channelRepository.getChannelVideo(condition.getChannel_id());
     }
 
@@ -158,7 +162,8 @@ public class ChannelService {
                 data.set((int) (index - 1), 1);
             }
         }
-        recommendIndex = channelRepository.getSimilarChannel(data);
+
+        System.out.println(channelRepository.getSimilarChannel(data));
 
         System.out.println(recommendIndex);
         return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);

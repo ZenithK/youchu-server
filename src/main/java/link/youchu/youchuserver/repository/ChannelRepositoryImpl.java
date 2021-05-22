@@ -16,11 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.EntityManager;
 
+import java.security.InvalidKeyException;
 import java.util.*;
 
 import static link.youchu.youchuserver.domain.QChannel.*;
@@ -56,7 +58,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
     }
 
     @Override
-    public List<VideoDto> getChannelVideo(String channel_id) throws ParseException {
+    public List<VideoDto> getChannelVideo(String channel_id) throws ParseException, InvalidKeyException {
         RestTemplate restTemplate = new RestTemplate();
         List<VideoDto> channelVideo = new ArrayList<>();
         try {
@@ -126,6 +128,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
 
         } catch (ParseException e) {
             throw new ParseException(0,"채널에 업로드된 영상이 없습니다.");
+        } catch (HttpClientErrorException e){
+            throw new InvalidKeyException();
         }
         return channelVideo;
     }
@@ -347,7 +351,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom{
         try {
             RestTemplate restTemplate = new RestTemplate();
             Map<String, Long> map = new HashMap<>();
-            map.put("data",channel_index);
+            map.put("channel",channel_index);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             Gson gson = new Gson();

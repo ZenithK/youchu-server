@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
 import java.util.List;
 
 @RestController
@@ -60,18 +61,17 @@ public class ChannelApiController {
     }
 
     @GetMapping("/relate")
-    public ResponseEntity<Message> getRelatedChannel(UserSearchCondition condition, Pageable pageable){
+    public ResponseEntity<ComplexMessage> getRelatedChannel(UserSearchCondition condition, Pageable pageable){
         try{
-            Message message = new Message();
+            ComplexMessage message = channelService.getRelatedChannel(condition,pageable);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(channelService.getRelatedChannel(condition,pageable));
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
         }catch (Exception e){
-            Message message = new Message();
+            ComplexMessage message = new ComplexMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(400L);
@@ -116,7 +116,14 @@ public class ChannelApiController {
             message.setData(channelService.getLatestChannel(condition));
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
-        }catch(ParseException e) {
+        }catch(InvalidKeyException e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(401L);
+            message.setMessage("API Key의 할당량이 초과되었습니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        } catch(ParseException e) {
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));

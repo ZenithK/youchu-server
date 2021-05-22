@@ -6,6 +6,7 @@ import org.json.simple.parser.ParseException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.security.InvalidKeyException;
 import java.util.List;
 
 public interface ChannelRepositoryCustom {
@@ -18,6 +19,6 @@ public interface ChannelRepositoryCustom {
     Long getChannelIndex(ChannelSearchCondition condition);
     List<Long> getSimilarChannel(List<Integer> data);
     SimpleChannelDto getRecommnedChannel(Long index);
-    List<VideoDto> getChannelVideo(String channel_id) throws ParseException;
+    List<VideoDto> getChannelVideo(String channel_id) throws ParseException, InvalidKeyException;
     List<Long> getRelatedChannel(Long channel_index);
 }
