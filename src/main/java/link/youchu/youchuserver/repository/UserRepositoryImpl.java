@@ -2,10 +2,7 @@ package link.youchu.youchuserver.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import link.youchu.youchuserver.Dto.QUserDto;
-import link.youchu.youchuserver.Dto.UserDto;
-import link.youchu.youchuserver.Dto.UserPostCondition;
-import link.youchu.youchuserver.Dto.UserSearchCondition;
+import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.domain.QUsers;
 import link.youchu.youchuserver.domain.Users;
 import org.json.simple.JSONArray;
@@ -35,6 +32,32 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     public UserRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
         this.em = em;
+    }
+
+    @Override
+    public Long getUserToken(TokenUpdateCondition condition) throws AuthenticationException {
+        RestTemplate restTemplate = new RestTemplate();
+        String jwtToken = condition.getAccess_token();
+        JSONParser parser = new JSONParser();
+        try {
+            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
+                    .queryParam("access_token", jwtToken).encode().toUriString();
+
+            // result
+            String resultJson = restTemplate.getForObject(requestUrl, String.class);
+
+            JSONObject user_inform = (JSONObject) parser.parse(resultJson);
+
+            // token expired check
+            String user_email = user_inform.get("email").toString();
+
+            UserSearchCondition userSearchCondition = new UserSearchCondition();
+            userSearchCondition.setGoogle_user_id(condition.getGoogle_user_id());
+            Long userIndex = getUserIndex(userSearchCondition);
+            return userIndex;
+        }catch(Exception e) {
+            throw new AuthenticationException();
+        }
     }
 
     @Override

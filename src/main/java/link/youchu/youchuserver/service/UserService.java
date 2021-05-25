@@ -1,18 +1,14 @@
 package link.youchu.youchuserver.service;
 
 import link.youchu.youchuserver.Dto.*;
-import link.youchu.youchuserver.domain.Channel;
+import link.youchu.youchuserver.domain.SecurityUser;
 import link.youchu.youchuserver.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +19,16 @@ public class UserService {
     private final PrefferedChannelsRepository prefferedChannelsRepository;
     private final DatasetUserRepository datasetRepository;
     private final DislikeChannelRepository dislikeChannelRepository;
+
+    @Transactional
+    public Long getUserToken(TokenUpdateCondition condition) throws AuthenticationException {
+        return userRepository.getUserToken(condition);
+    }
+
+    @Transactional
+    public String getUserById(Long user_id) {
+        return userRepository.getUsersByUser_id(user_id);
+    }
 
     @Transactional
     public UserDto getUserData(UserSearchCondition condition){
@@ -106,7 +112,6 @@ public class UserService {
     public Long getDislikeCount(UserSearchCondition condition) {
         return dislikeChannelRepository.dislikeCount(condition);
     }
-
 
 
 }

@@ -1,12 +1,12 @@
 package link.youchu.youchuserver.controller;
 
+//import link.youchu.youchuserver.Config.AuthenticationToken;
+import link.youchu.youchuserver.Config.JwtAuthenticationTokenProvider;
+import link.youchu.youchuserver.Dto.TokenUpdateCondition;
 import link.youchu.youchuserver.Dto.UserDto;
 import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
-import link.youchu.youchuserver.Http.ComplexMessage;
-import link.youchu.youchuserver.Http.Message;
-import link.youchu.youchuserver.Http.ParameterMessage;
-import link.youchu.youchuserver.Http.StatusEnum;
+import link.youchu.youchuserver.Http.*;
 import link.youchu.youchuserver.domain.Users;
 import link.youchu.youchuserver.repository.DislikeChannelRepository;
 import link.youchu.youchuserver.repository.PrefferedChannelsRepository;
@@ -30,23 +30,53 @@ import java.nio.charset.Charset;
 @RequiredArgsConstructor
 public class UserApiController {
 
-
     private final UserService service;
+    private final JwtAuthenticationTokenProvider provider;
 
-    @GetMapping("/userIndex")
-    public ResponseEntity<Message> getUserIndex(UserSearchCondition condition) {
+    @GetMapping("/userToken")
+    public ResponseEntity<Message> getUserToken(TokenUpdateCondition condition) {
         try{
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(service.getUserIndex(condition));
+            message.setData(provider.issue(service.getUserToken(condition)).getToken());
+            return new ResponseEntity<>(message,headers, HttpStatus.OK);
+
+        }catch(AuthenticationException e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(401L);
+            message.setMessage("재인증 실패!");
+            return new ResponseEntity<>(message,headers, HttpStatus.UNAUTHORIZED);
+        } catch (Exception e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(400L);
+            message.setMessage("잘못된 요청입니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/userIndex")
+    public ResponseEntity<UserInfoMessage> getUserIndex(UserSearchCondition condition) {
+        try{
+            UserInfoMessage message = new UserInfoMessage();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(200L);
+            message.setMessage("Success");
+            Long index = service.getUserIndex(condition);
+            message.setData(index);
+            message.setToken(provider.issue(index).getToken());
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
         }catch (Exception e){
             System.out.println(e.getMessage());
-            Message message = new Message();
+            UserInfoMessage message = new UserInfoMessage();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(400L);
@@ -95,16 +125,18 @@ public class UserApiController {
             UserSearchCondition userSearchCondition = new UserSearchCondition();
             userSearchCondition.setGoogle_user_id(condition.getGoogle_user_id());
             UserDto userData = service.getUserData(userSearchCondition);
-            if( userData != null){
+            if(userData != null){
                 user_id = userData.getUser_id();
                 message.setExist(true);
                 condition.setUser_id(user_id);
                 aLong = service.UpdateUser(condition);
+                message.setData(user_id);
+                return new ResponseEntity<>(message,headers, HttpStatus.OK);
             }else{
                 aLong = service.registerUser(condition);
+                message.setData(provider.issue(aLong).getToken());
+                return new ResponseEntity<>(message,headers, HttpStatus.OK);
             }
-            message.setData(aLong);
-            return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(AuthenticationException e) {
             ParameterMessage message = new ParameterMessage();
             HttpHeaders headers = new HttpHeaders();

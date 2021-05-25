@@ -1,5 +1,6 @@
 package link.youchu.youchuserver.repository;
 
+import link.youchu.youchuserver.Dto.TokenUpdateCondition;
 import link.youchu.youchuserver.Dto.UserDto;
 import link.youchu.youchuserver.Dto.UserPostCondition;
 import link.youchu.youchuserver.Dto.UserSearchCondition;
@@ -14,6 +15,7 @@ public interface UserRepositoryCustom {
     UserDto getUserData(UserSearchCondition condition);
     List<String> registerUsers(UserPostCondition condition) throws AuthenticationException, HttpClientErrorException;
 
+    Long getUserToken(TokenUpdateCondition condition) throws AuthenticationException;
     List<String> updateUsers(UserPostCondition condition) throws HttpClientErrorException.Unauthorized, AuthenticationException;
     Long userPreferChannel();
     Long userDislikeChannel();
