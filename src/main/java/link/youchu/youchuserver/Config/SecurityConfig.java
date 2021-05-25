@@ -17,7 +17,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] PUBLIC_URI = {
             "/register", "/channel", "/recommend", "/keyword", "/similar/**","/rank","/channelByKeyword",
-            "/banner","/getPrefer","/getDislike","/random","/latest","/relate"
+            "/banner","/getPrefer","/getDislike","/random","/latest","/relate","/hello"
     };
 
     @Override
