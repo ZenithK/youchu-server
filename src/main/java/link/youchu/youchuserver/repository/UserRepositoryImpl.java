@@ -37,7 +37,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     @Override
     public Long getUserToken(TokenUpdateCondition condition) throws AuthenticationException {
         RestTemplate restTemplate = new RestTemplate();
-        String jwtToken = condition.getAccess_token();
+        String jwtToken = condition.getUser_token();
         JSONParser parser = new JSONParser();
         try {
             String requestUrl = UriComponentsBuilder.fromHttpUrl("https://oauth2.googleapis.com/tokeninfo")
