@@ -7,6 +7,7 @@ public class ParameterMessage {
     private Long status;
     private String message;
     private Boolean exist;
+    private String token;
     private Object data;
 
 

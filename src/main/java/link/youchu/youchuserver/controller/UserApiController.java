@@ -1,6 +1,7 @@
 package link.youchu.youchuserver.controller;
 
 //import link.youchu.youchuserver.Config.AuthenticationToken;
+import io.jsonwebtoken.ExpiredJwtException;
 import link.youchu.youchuserver.Config.JwtAuthenticationTokenProvider;
 import link.youchu.youchuserver.Dto.TokenUpdateCondition;
 import link.youchu.youchuserver.Dto.UserDto;
@@ -101,6 +102,13 @@ public class UserApiController {
             message.setData(userData);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
+        }catch(ExpiredJwtException e){
+            Message message = new Message();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(403L);
+            message.setMessage("토큰이 만료되었습니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
         }catch (Exception e){
             System.out.println(e.getMessage());
             Message message = new Message();
@@ -131,10 +139,12 @@ public class UserApiController {
                 condition.setUser_id(user_id);
                 aLong = service.UpdateUser(condition);
                 message.setData(user_id);
+                message.setToken(provider.issue(aLong).getToken());
                 return new ResponseEntity<>(message,headers, HttpStatus.OK);
             }else{
                 aLong = service.registerUser(condition);
-                message.setData(provider.issue(aLong).getToken());
+                message.setData(aLong);
+                message.setToken(provider.issue(aLong).getToken());
                 return new ResponseEntity<>(message,headers, HttpStatus.OK);
             }
         }catch(AuthenticationException e) {
@@ -156,7 +166,7 @@ public class UserApiController {
     }
 
     @DeleteMapping("/exit")
-    public ResponseEntity<Message>  exitUser(UserSearchCondition condition){
+    public ResponseEntity<Message> exitUser(UserSearchCondition condition){
         try{
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
