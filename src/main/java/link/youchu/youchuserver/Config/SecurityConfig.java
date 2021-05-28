@@ -1,5 +1,6 @@
 package link.youchu.youchuserver.Config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,9 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
     private static final String[] PUBLIC_URI = {
             "/register", "/channel", "/recommend", "/keyword", "/similar/**","/rank","/channelByKeyword",
             "/banner","/getPrefer","/getDislike","/random","/latest","/relate","/hello","/userIndex","/getTopic"
@@ -24,7 +28,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
-                .httpBasic().disable()
                 .formLogin().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -35,7 +38,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(PUBLIC_URI)
                 .permitAll()
                 .anyRequest()
-                .hasRole("AUTH");
+                .hasRole("AUTH")
+                .and()
+                .httpBasic().authenticationEntryPoint(authenticationEntryPoint);
         http.addFilterBefore(tokenAuthenticationFilter(),UsernamePasswordAuthenticationFilter.class);
     }
 
