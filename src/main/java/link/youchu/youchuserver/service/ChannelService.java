@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.security.InvalidKeyException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -112,7 +113,7 @@ public class ChannelService {
     }
 
     @Transactional
-    public ComplexMessage getRelatedChannel(UserSearchCondition condition, Pageable pageable){
+    public ComplexMessage getRelatedChannel(UserSearchCondition condition){
         List<Long> preferIndex = null;
         try {
             preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
@@ -131,17 +132,22 @@ public class ChannelService {
             ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
             channelSearchCondition.setChannel_index(randValue);
             ChannelDto channelData = getChannelData(channelSearchCondition);
-            List<Long> channels = channelRepository.getRelatedChannel(randValue);
+            List<Long> channels = channelRepository.getRelatedChannel(randValue).subList(0,100);
             channels.forEach(s->s=s+1);
             UserSearchCondition userSearchCondition = new UserSearchCondition();
             userSearchCondition.setUser_id(condition.getUser_id());
             ComplexMessage message = new ComplexMessage();
-            Page<SimpleDtoPlusBanner> recommendChannelList = channelRepository.getRelateChannelList(channels, pageable, userSearchCondition);
-            message.setData(recommendChannelList);
+            List<SimpleDtoPlusBanner> recommendChannelList = channelRepository.getRelateChannelList(channels, userSearchCondition);
+            List<SimpleDtoPlusBanner> collect = recommendChannelList.stream()
+                    .sorted((a,b)->{
+                        long a_index = channels.indexOf(a.getChannel_index());
+                        long b_index = channels.indexOf(b.getChannel_index());
+                        return Long.compare(a_index,b_index);}).collect(Collectors.toList());
+            message.setData(collect);
             message.setStandardValue(channelData.getTitle());
             return message;
         }else{
-            Page<SimpleDtoPlusBanner> channelDtos = channelRepository.getRandomChannelBanner(pageable);
+            List<SimpleDtoPlusBanner> channelDtos = channelRepository.getRandomChannelBanner();
             ComplexMessage message = new ComplexMessage();
             message.setData(channelDtos);
             return message;
@@ -172,27 +178,31 @@ public class ChannelService {
     }
 
     @Transactional
-    public Page<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition, Pageable pageable){
+    public List<SimpleChannelDto> getRecommendChannel(UserSearchCondition condition) {
         List<Long> preferIndex = null;
         try {
             preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        List<Long> recommendIndex = new ArrayList<>();
-        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
-        if(preferIndex.size() != 0){
-            for(Long index : preferIndex){
+        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928, 0));
+        if (preferIndex.size() != 0) {
+            for (Long index : preferIndex) {
                 data.set((int) (index - 1), 1);
             }
-            recommendIndex = channelRepository.getSimilarChannel(data);
-            recommendIndex.stream().forEach(s->s=s+1);
-            System.out.println(recommendIndex);
-            return channelRepository.getRecommendChannelList(recommendIndex, pageable,condition);
-        }else{
-           return channelRepository.getChannelRandom(pageable);
+            List<Long> recommendIndex = channelRepository.getSimilarChannel(data).subList(0,100);
+            recommendIndex.stream().forEach(s -> s = s + 1);
+            List<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(recommendIndex, condition);
+            List<SimpleChannelDto> collect = recommendChannelList.stream()
+                    .sorted((a, b) -> {
+                        long a_index = recommendIndex.indexOf(a.getChannel_index());
+                        long b_index = recommendIndex.indexOf(b.getChannel_index());
+                        return Long.compare(a_index, b_index);
+                    }).collect(Collectors.toList());
+            return collect;
+        } else {
+            return channelRepository.getChannelRandom();
         }
-
 
     }
 

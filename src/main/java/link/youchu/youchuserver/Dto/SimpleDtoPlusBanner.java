@@ -4,7 +4,7 @@ import com.querydsl.core.annotations.QueryProjection;
 import lombok.Data;
 
 @Data
-public class SimpleDtoPlusBanner {
+public class SimpleDtoPlusBanner implements Comparable<SimpleDtoPlusBanner>{
     private Long channel_index;
     private String title;
     private String thumbnail;
@@ -33,5 +33,10 @@ public class SimpleDtoPlusBanner {
         this.banner_image = banner_image;
         this.channel_id = channel_id;
         this.isPreferred = isPreferred;
+    }
+
+    @Override
+    public int compareTo(SimpleDtoPlusBanner simpleDtoPlusBanner) {
+        return 0;
     }
 }

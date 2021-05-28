@@ -61,9 +61,9 @@ public class ChannelApiController {
     }
 
     @GetMapping("/relate")
-    public ResponseEntity<ComplexMessage> getRelatedChannel(UserSearchCondition condition, Pageable pageable){
+    public ResponseEntity<ComplexMessage> getRelatedChannel(UserSearchCondition condition){
         try{
-            ComplexMessage message = channelService.getRelatedChannel(condition,pageable);
+            ComplexMessage message = channelService.getRelatedChannel(condition);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
@@ -141,14 +141,14 @@ public class ChannelApiController {
     }
 
     @GetMapping("/recommend")
-    public ResponseEntity<Message> getRecommendChannelList(UserSearchCondition condition,Pageable pageable) {
+    public ResponseEntity<Message> getRecommendChannelList(UserSearchCondition condition) {
         try{
             Message message = new Message();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
             message.setStatus(200L);
             message.setMessage("Success");
-            message.setData(channelService.getRecommendChannel(condition,pageable));
+            message.setData(channelService.getRecommendChannel(condition));
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
         }catch(Exception e){
             Message message = new Message();

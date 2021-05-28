@@ -15,14 +15,14 @@ public interface ChannelRepositoryCustom {
     Page<SimpleDtoPlusBanner> getChannelByKeyword(KeywordSearchCondition condition, Pageable pageable);
     ChannelDto getRandomChannel(UserSearchCondition condition);
     Page<SimpleChannelDto> getChannelByOneKeyword(KeywordSearchCondition condition, Pageable pageable);
-    Page<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,Pageable pageable,UserSearchCondition condition);
+    List<SimpleChannelDto> getRecommendChannelList(List<Long> channel_indices,UserSearchCondition condition);
 
-    Page<SimpleDtoPlusBanner> getRandomChannelBanner(Pageable pageable);
-    Page<SimpleDtoPlusBanner> getRelateChannelList(List<Long> channel_indices, Pageable pageable, UserSearchCondition condition);
+    List<SimpleDtoPlusBanner> getRandomChannelBanner();
+    List<SimpleDtoPlusBanner> getRelateChannelList(List<Long> channel_indices,  UserSearchCondition condition);
     Long getChannelIndex(ChannelSearchCondition condition);
     List<Long> getSimilarChannel(List<Integer> data);
     SimpleChannelDto getRecommnedChannel(Long index);
     List<VideoDto> getChannelVideo(String channel_id) throws ParseException, InvalidKeyException;
     List<Long> getRelatedChannel(Long channel_index);
-    Page<SimpleChannelDto> getChannelRandom(Pageable pageable);
+    List<SimpleChannelDto> getChannelRandom();
 }
