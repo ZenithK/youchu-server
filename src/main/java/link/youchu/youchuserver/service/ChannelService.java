@@ -114,21 +114,10 @@ public class ChannelService {
 
     @Transactional
     public ComplexMessage getRelatedChannel(UserSearchCondition condition){
-        List<Long> preferIndex = null;
-        try {
-            preferIndex = prefferedChannelsRepository.getPrefferedChannelIndex(condition);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        List<Long> recommendIndex = new ArrayList<>();
-        List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928,0));
-        if(preferIndex.size()!=0){
-            for(Long index : preferIndex){
-                data.set((int) (index - 1), 1);
-            }
-            recommendIndex = channelRepository.getSimilarChannel(data);
-            Random random = new Random();
-            Long randValue = recommendIndex.get(random.nextInt(recommendIndex.size()));
+            List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(condition);
+            if(prefferedList.size() != 0) {
+                Random random = new Random();
+            Long randValue = prefferedList.get(random.nextInt(prefferedList.size())).getChannel_index();
             ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
             channelSearchCondition.setChannel_index(randValue);
             ChannelDto channelData = getChannelData(channelSearchCondition);
