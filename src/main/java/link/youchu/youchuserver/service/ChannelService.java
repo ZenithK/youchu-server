@@ -121,8 +121,7 @@ public class ChannelService {
             ChannelSearchCondition channelSearchCondition = new ChannelSearchCondition();
             channelSearchCondition.setChannel_index(randValue);
             ChannelDto channelData = getChannelData(channelSearchCondition);
-            List<Long> channels = channelRepository.getRelatedChannel(randValue).subList(0,100);
-            channels.forEach(s->s=s+1);
+            List<Long> channels = channelRepository.getRelatedChannel(randValue-1).subList(0,100);
             UserSearchCondition userSearchCondition = new UserSearchCondition();
             userSearchCondition.setUser_id(condition.getUser_id());
             ComplexMessage message = new ComplexMessage();
@@ -132,6 +131,7 @@ public class ChannelService {
                         long a_index = channels.indexOf(a.getChannel_index());
                         long b_index = channels.indexOf(b.getChannel_index());
                         return Long.compare(a_index,b_index);}).collect(Collectors.toList());
+            System.out.println(collect);
             message.setData(collect);
             message.setStandardValue(channelData.getTitle());
             return message;
@@ -180,7 +180,6 @@ public class ChannelService {
                 data.set((int) (index - 1), 1);
             }
             List<Long> recommendIndex = channelRepository.getSimilarChannel(data).subList(0,100);
-            recommendIndex.stream().forEach(s -> s = s + 1);
             List<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(recommendIndex, condition);
             List<SimpleChannelDto> collect = recommendChannelList.stream()
                     .sorted((a, b) -> {
