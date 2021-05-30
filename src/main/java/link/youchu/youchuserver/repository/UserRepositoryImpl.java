@@ -115,7 +115,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
             // token expired check
             String user_email = user_inform.get("email").toString();
 
-            Users user = new Users(condition.getGoogle_user_id(), user_email, condition.getUser_token());
+            Users user = new Users(condition.getGoogle_user_id(), user_email);
             em.persist(user);
 
         }catch(Exception e) {
@@ -152,7 +152,7 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     }
 
     @Override
-    public List<String> updateUsers(UserPostCondition condition) throws AuthenticationException {
+    public List<String> updateUsers(UserPostCondition condition) throws AuthenticationException, ParseException {
         RestTemplate restTemplate = new RestTemplate();
         List<String> channelIdList = null;
         String jwtToken = condition.getUser_token();
@@ -171,7 +171,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
             throw new AuthenticationException();
         }
 
-        try{
             String youtubeRequest = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/subscriptions")
                     .queryParam("part", "snippet").queryParam("mine", true).queryParam("maxResults",1000)
                     .queryParam("access_token", jwtToken).encode().toUriString();
@@ -192,7 +191,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
             queryFactory.update(users).where(useridEq(condition.getUser_id()))
                     .set(users.user_email, user_email)
                     .set(users.google_user_id, condition.getGoogle_user_id())
-                    .set(users.user_token, condition.getUser_token())
                     .execute();
 
 
@@ -206,9 +204,6 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
                 channelIdList.add(resource.get("channelId").toString());
 
             }
-        }catch (HttpClientErrorException | ParseException e){
-            return null;
-        }
         return channelIdList;
     }
 

@@ -4,6 +4,7 @@ import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.domain.SecurityUser;
 import link.youchu.youchuserver.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.json.simple.parser.ParseException;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
@@ -77,7 +78,7 @@ public class UserService {
     }
 
     @Transactional
-    public Long UpdateUser(UserPostCondition condition) throws AuthenticationException {
+    public Long UpdateUser(UserPostCondition condition) throws AuthenticationException, ParseException {
         List<String> channelIds = userRepository.updateUsers(condition);
         if(channelIds == null){
             Long user_id = condition.getUser_id();
