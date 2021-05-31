@@ -15,7 +15,8 @@ public class ChannelDto {
     private String banner_image;
     private Long video_count;
     private String channel_id;
-    private Boolean isPreferred;
+    private int isPreferred;
+
     @QueryProjection
     public ChannelDto(Long index,String title, String description, String published_at, String thumbnail, Long view_count, Long subscriber_count, String banner_image, Long video_count, String channel_id) {
         this.channel_index = index;
@@ -28,6 +29,21 @@ public class ChannelDto {
         this.banner_image = banner_image;
         this.video_count = video_count;
         this.channel_id = channel_id;
-        this.isPreferred = false;
+        this.isPreferred = 0;
+    }
+
+    @QueryProjection
+    public ChannelDto(Long index,String title, String description, String published_at, String thumbnail, Long view_count, Long subscriber_count, String banner_image, Long video_count, String channel_id, int isPreferred) {
+        this.channel_index = index;
+        this.title = title;
+        this.description = description;
+        this.published_at = published_at;
+        this.thumbnail = thumbnail;
+        this.view_count = view_count;
+        this.subscriber_count = subscriber_count;
+        this.banner_image = banner_image;
+        this.video_count = video_count;
+        this.channel_id = channel_id;
+        this.isPreferred = isPreferred;
     }
 }

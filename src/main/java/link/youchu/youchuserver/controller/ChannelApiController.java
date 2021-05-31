@@ -5,9 +5,11 @@ import link.youchu.youchuserver.Http.ComplexMessage;
 import link.youchu.youchuserver.Http.Message;
 import link.youchu.youchuserver.Http.StatusEnum;
 import link.youchu.youchuserver.domain.Channel;
+import link.youchu.youchuserver.domain.DislikeChannels;
 import link.youchu.youchuserver.repository.ChannelRepository;
 import link.youchu.youchuserver.repository.PrefferedChannelsRepository;
 import link.youchu.youchuserver.service.ChannelService;
+import link.youchu.youchuserver.service.DislikeChannelService;
 import link.youchu.youchuserver.service.PrefferedChannelService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.Response;
@@ -29,6 +31,7 @@ import java.util.List;
 public class ChannelApiController {
 
     private final ChannelService channelService;
+    private final DislikeChannelService dislikeChannelService;
     private final PrefferedChannelService prefferedChannelService;
 
     @GetMapping("/channel")
@@ -43,9 +46,15 @@ public class ChannelApiController {
            UserSearchCondition searchCondition = new UserSearchCondition();
            searchCondition.setUser_id(condition.getUser_id());
            List<ChannelDto> preferredDtos = prefferedChannelService.getPrefferedList(searchCondition);
+           List<ChannelDto> dislikeChannel = dislikeChannelService.getDislikeChannel(searchCondition);
            for(ChannelDto c : preferredDtos){
                if(c.getChannel_id().equals(channelDtos.getChannel_id())){
-                   channelDtos.setIsPreferred(true);
+                   channelDtos.setIsPreferred(1);
+               }
+           }
+           for (ChannelDto c : dislikeChannel) {
+               if(c.getChannel_id().equals(channelDtos.getChannel_id())){
+                   channelDtos.setIsPreferred(2);
                }
            }
            message.setData(channelDtos);

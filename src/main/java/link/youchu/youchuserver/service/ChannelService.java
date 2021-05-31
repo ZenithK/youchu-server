@@ -22,6 +22,7 @@ public class ChannelService {
 
     private final ChannelRepository channelRepository;
     private final PrefferedChannelsRepository prefferedChannelsRepository;
+    private final DislikeChannelRepository dislikeChannelRepository;
     private final DatasetUserRepository datasetUserRepository;
     private final TopicRepository topicRepository;
     private final KeywordRepository keywordRepository;
@@ -37,10 +38,18 @@ public class ChannelService {
         UserSearchCondition userSearchCondition = new UserSearchCondition();
         userSearchCondition.setUser_id(condition.getUser_id());
         List<ChannelDto> prefferedList = prefferedChannelsRepository.getPrefferedList(userSearchCondition);
+        List<ChannelDto> dislike = dislikeChannelRepository.getDislike(userSearchCondition);
         for (ChannelDto c : prefferedList) {
             for (SimpleDtoPlusBanner s : channelByTopic) {
                 if(s.getChannel_id().equals(c.getChannel_id())){
-                    s.setIsPreferred(true);
+                    s.setIsPreferred(1);
+                }
+            }
+        }
+        for(ChannelDto c: dislike){
+            for (SimpleDtoPlusBanner s : channelByTopic) {
+                if(s.getChannel_id().equals(c.getChannel_id())){
+                    s.setIsPreferred(2);
                 }
             }
         }
@@ -67,7 +76,7 @@ public class ChannelService {
         for (ChannelDto c : prefferedList) {
             for (SimpleDtoPlusBanner s : channelByTopic) {
                 if(s.getChannel_id().equals(c.getChannel_id())){
-                    s.setIsPreferred(true);
+                    s.setIsPreferred(1);
                 }
             }
         }
@@ -102,7 +111,7 @@ public class ChannelService {
         for (ChannelDto c : prefferedList) {
             for (SimpleDtoPlusBanner s : keyword) {
                 if(s.getChannel_id().equals(c.getChannel_id())){
-                    s.setIsPreferred(true);
+                    s.setIsPreferred(1);
                 }
             }
         }
@@ -159,7 +168,7 @@ public class ChannelService {
         for (ChannelDto c : prefferedList) {
             for (SimpleChannelDto s : keyword) {
                 if(s.getChannel_id().equals(c.getChannel_id())){
-                    s.setIsPreferred(true);
+                    s.setIsPreferred(1);
                 }
             }
         }

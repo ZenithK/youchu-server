@@ -24,7 +24,11 @@ public class PrefferedChannelService {
 
     @Transactional
     public List<ChannelDto> getPrefferedList(UserSearchCondition condition){
-        return repository.getPrefferedList(condition);
+        List<ChannelDto> prefferedList = repository.getPrefferedList(condition);
+        for (ChannelDto c : prefferedList) {
+            c.setIsPreferred(1);
+        }
+        return prefferedList;
     }
 
     @Transactional

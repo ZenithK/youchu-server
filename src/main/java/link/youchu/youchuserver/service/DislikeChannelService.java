@@ -30,7 +30,11 @@ public class DislikeChannelService {
 
     @Transactional
     public List<ChannelDto> getDislikeChannel(UserSearchCondition condition){
-        return repository.getDislike(condition);
+        List<ChannelDto> dislike = repository.getDislike(condition);
+        for (ChannelDto c : dislike) {
+            c.setIsPreferred(2);
+        }
+        return dislike;
     }
 
     @Transactional
