@@ -190,15 +190,16 @@ public class ChannelService {
 
         }
         List<Integer> data = new ArrayList<Integer>(Collections.nCopies(21928, 0));
+        if(dislikeIndex.size()!=0){
+            for (Long index : dislikeIndex) {
+                data.set((int)(index-1),-1);
+            }
+        }
         if (preferIndex.size() != 0) {
             for (Long index : preferIndex) {
                 data.set((int) (index - 1), 1);
             }
-            if(dislikeIndex.size()!=0){
-                for (Long index : dislikeIndex) {
-                    data.set((int)(index-1),-1);
-                }
-            }
+
             List<Long> recommendIndex = channelRepository.getSimilarChannel(data).subList(0,100);
             List<SimpleChannelDto> recommendChannelList = channelRepository.getRecommendChannelList(recommendIndex, condition);
             List<SimpleChannelDto> collect = recommendChannelList.stream()
