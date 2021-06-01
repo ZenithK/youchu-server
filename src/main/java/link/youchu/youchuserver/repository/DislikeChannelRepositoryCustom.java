@@ -9,6 +9,7 @@ import java.util.List;
 public interface DislikeChannelRepositoryCustom {
     Long deleteDislike(PrefferedPostCondition condition);
 
+    List<Long> getDislikeIndex(UserSearchCondition condition);
     void postDislike(PrefferedPostCondition condition);
     Long dislikeCount(UserSearchCondition condition);
     List<ChannelDto> getDislike(UserSearchCondition condition);

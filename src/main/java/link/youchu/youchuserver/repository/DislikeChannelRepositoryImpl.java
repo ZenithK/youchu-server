@@ -70,6 +70,14 @@ public class DislikeChannelRepositoryImpl implements DislikeChannelRepositoryCus
     }
 
     @Override
+    public List<Long> getDislikeIndex(UserSearchCondition condition) {
+        return queryFactory.select(dislikeChannels.channel.id)
+                .from(dislikeChannels)
+                .where(userIdEq(condition.getUser_id()))
+                .fetch();
+    }
+
+    @Override
     public Long dislikeCount(UserSearchCondition condition) {
         QueryResults<DislikeChannels> results = queryFactory.selectFrom(dislikeChannels)
                 .where(userIdEq(condition.getUser_id()),
