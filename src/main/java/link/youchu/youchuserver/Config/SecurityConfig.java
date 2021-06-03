@@ -23,7 +23,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/register", "/channel", "/recommend", "/keyword", "/similar/**","/rank","/channelByKeyword",
             "/banner","/getPrefer","/getDislike","/random","/latest","/relate","/hello","/userIndex","/getTopic",
             "/index.html", "/Personal_Information.html","/license_information.html", "/Service.html", "/",
-            "/img.png","/page2.png", "/page3.png","/page4.png", "/page5.png", "/style.css"
+            "/img.png","/page2.png", "/page3.png","/page4.png", "/page5.png", "/style.css", "/Apple/Register"
     };
 
     @Override

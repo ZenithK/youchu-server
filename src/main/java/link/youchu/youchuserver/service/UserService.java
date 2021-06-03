@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
 import javax.transaction.Transactional;
+import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -20,6 +21,11 @@ public class UserService {
     private final PrefferedChannelsRepository prefferedChannelsRepository;
     private final DatasetUserRepository datasetRepository;
     private final DislikeChannelRepository dislikeChannelRepository;
+
+    @Transactional
+    public Long appleLogin(AppleLoginDto appleLoginDto) throws Exception {
+        return userRepository.appleUsers(appleLoginDto);
+    }
 
     @Transactional
     public Long getUserToken(TokenUpdateCondition condition) throws AuthenticationException {

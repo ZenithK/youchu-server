@@ -9,6 +9,7 @@ public class UserDto {
     private String user_email;
     private Long prefer_count;
     private Long dislike_count;
+    private String domain = null;
 
     @QueryProjection
     public UserDto(Long user_id, String user_email) {

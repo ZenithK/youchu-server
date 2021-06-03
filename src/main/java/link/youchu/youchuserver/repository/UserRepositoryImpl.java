@@ -1,7 +1,15 @@
 package link.youchu.youchuserver.repository;
 
+import com.auth0.jwt.JWTVerifier;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JWSObject;
+import com.nimbusds.jose.JWSVerifier;
+import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
 import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.domain.QUsers;
 import link.youchu.youchuserver.domain.Users;
@@ -9,6 +17,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -17,9 +26,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.naming.AuthenticationException;
 import javax.persistence.EntityManager;
 import javax.persistence.FlushModeType;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.RSAPublicKeySpec;
+import java.util.*;
 
 import static link.youchu.youchuserver.domain.QUsers.*;
 import static org.springframework.util.ObjectUtils.isEmpty;
@@ -29,9 +42,66 @@ public class UserRepositoryImpl implements UserRepositoryCustom{
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
 
+    @Value("${iss}")
+    private String ISS;
+    @Value("${aud}")
+    private String AUD;
+
     public UserRepositoryImpl(EntityManager em) {
         this.queryFactory = new JPAQueryFactory(em);
         this.em = em;
+    }
+
+    @Override
+    public Long appleUsers(AppleLoginDto appleLoginDto) throws Exception {
+        try{
+            RestTemplate restTemplate = new RestTemplate();
+            String requestUrl = UriComponentsBuilder.fromHttpUrl("https://appleid.apple.com/auth/keys")
+                    .encode().toUriString();
+            ApplePublicKeyResponse keyResponse = restTemplate.getForObject(requestUrl, ApplePublicKeyResponse.class);
+
+            String headerOfIdentityToken = appleLoginDto.getIdentity_token().substring(0, appleLoginDto.getIdentity_token().indexOf("."));
+            Map<String, String> header = new ObjectMapper().readValue(new String(Base64.getDecoder().decode(headerOfIdentityToken), "UTF-8"), Map.class);
+            ApplePublicKeyResponse.Key key = keyResponse.getMatchedKeyBy(header.get("kid"), header.get("alg"))
+                    .orElseThrow(() -> new NullPointerException("Failed get public key from apple's id server."));
+
+            byte[] nBytes = Base64.getUrlDecoder().decode(key.getN());
+            byte[] eBytes = Base64.getUrlDecoder().decode(key.getE());
+
+            BigInteger n = new BigInteger(1, nBytes);
+            BigInteger e = new BigInteger(1, eBytes);
+
+            RSAPublicKeySpec publicKeySpec = new RSAPublicKeySpec(n, e);
+            KeyFactory keyFactory = KeyFactory.getInstance(key.getKty());
+            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+            Claims body = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(appleLoginDto.getIdentity_token()).getBody();
+
+            Date currentTime = new Date(System.currentTimeMillis());
+            if(!currentTime.before(body.getExpiration())){
+                throw new ExpiredJwtException(null,null,"");
+            }
+            if (!ISS.equals(body.getIssuer()) || !AUD.equals(body.getAudience())){
+                throw new InvalidKeySpecException();
+            }
+
+            Users user = new Users(appleLoginDto.getApple_user_id(), appleLoginDto.getUser_email());
+            em.persist(user);
+
+            return queryFactory.select(users.user_id)
+                    .from(users)
+                    .where(users.user_email.eq(appleLoginDto.getUser_email()))
+                    .fetchOne();
+
+        }catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+            throw new InvalidKeySpecException();
+        }catch (ExpiredJwtException e) {
+            e.printStackTrace();
+            throw new ExpiredJwtException(null,null,"");
+        }catch (Exception e){
+            throw new Exception("");
+        }
     }
 
     @Override

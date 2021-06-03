@@ -3,10 +3,7 @@ package link.youchu.youchuserver.controller;
 //import link.youchu.youchuserver.Config.AuthenticationToken;
 import io.jsonwebtoken.ExpiredJwtException;
 import link.youchu.youchuserver.Config.JwtAuthenticationTokenProvider;
-import link.youchu.youchuserver.Dto.TokenUpdateCondition;
-import link.youchu.youchuserver.Dto.UserDto;
-import link.youchu.youchuserver.Dto.UserPostCondition;
-import link.youchu.youchuserver.Dto.UserSearchCondition;
+import link.youchu.youchuserver.Dto.*;
 import link.youchu.youchuserver.Http.*;
 import link.youchu.youchuserver.domain.Users;
 import link.youchu.youchuserver.repository.DislikeChannelRepository;
@@ -25,7 +22,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
 import javax.transaction.Transactional;
+import java.lang.reflect.Parameter;
 import java.nio.charset.Charset;
+import java.security.InvalidKeyException;
+import java.security.spec.InvalidKeySpecException;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +33,49 @@ public class UserApiController {
 
     private final UserService service;
     private final JwtAuthenticationTokenProvider provider;
+
+    @PostMapping("/Apple/Register")
+    public ResponseEntity<ParameterMessage> appleLogin(@RequestBody final AppleLoginDto appleLoginDto){
+        try{
+            ParameterMessage message = new ParameterMessage();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(200L);
+            message.setMessage("Success");
+            Long aLong = null;
+            Long user_id = null;
+            UserSearchCondition userSearchCondition = new UserSearchCondition();
+            userSearchCondition.setGoogle_user_id(appleLoginDto.getApple_user_id());
+            UserDto userData = service.getUserData(userSearchCondition);
+            if(userData != null){
+                message.setExist(true);
+                user_id= userData.getUser_id();
+                message.setData(user_id);
+                message.setToken(provider.issue(user_id).getToken());
+                return new ResponseEntity<>(message,headers, HttpStatus.OK);
+            }else{
+                aLong = service.appleLogin(appleLoginDto);
+                message.setData(aLong);
+                message.setToken(provider.issue(aLong).getToken());
+                return new ResponseEntity<>(message,headers, HttpStatus.OK);
+            }
+
+        } catch(ExpiredJwtException e){
+            ParameterMessage message = new ParameterMessage();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(401L);
+            message.setMessage("애플 로그인 토큰이 만료되었습니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }catch(Exception e){
+            ParameterMessage message = new ParameterMessage();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(new MediaType("application","json", Charset.forName("UTF-8")));
+            message.setStatus(400L);
+            message.setMessage("잘못된 로그인 토큰 입니다.");
+            return new ResponseEntity<>(message,headers, HttpStatus.BAD_REQUEST);
+        }
+    }
 
     @GetMapping("/userToken")
     public ResponseEntity<Message> getUserToken(TokenUpdateCondition condition) {
@@ -95,10 +138,16 @@ public class UserApiController {
             message.setStatus(200L);
             message.setMessage("Success");
             UserDto userData = service.getUserData(condition);
+            if(userData.getUser_email().contains("gmail.com")){
+                userData.setDomain("Google");
+            }else{
+                userData.setDomain("Apple");
+            }
             Long preferred = service.getPreferCount(condition);
             userData.setPrefer_count(preferred);
             Long dislike = service.getDislikeCount(condition);
             userData.setDislike_count(dislike);
+
             message.setData(userData);
             return new ResponseEntity<>(message,headers, HttpStatus.OK);
 
